@@ -11,16 +11,18 @@ import * as SecureStore from 'expo-secure-store';
 import { LoggedIn } from "./lib/swr-hooks";
 import { AuthContext } from "./lib/swr-hooks";
 import AppLoading from "./components/AppLoading";
+import jwtDecode from "jwt-decode";
 export default function App() {
   const Stack = createNativeStackNavigator();
-  const [isSignedIn, setisSignedIn] = useState(null)
+  const [signedinUser, setsignedinUser] = useState(null)
   //  AsyncStorage.getItem('user-token').then((token) => {
-  //   setisSignedIn(token == null ? false : true)
+  //   setsignedinUser(token == null ? false : true)
   // })
 
   useEffect( () => {
     async function setauth() {
-      setisSignedIn(await AsyncStorage.getItem('user-token'))
+      const tk = await AsyncStorage.getItem('user-token');
+      tk == null ? setsignedinUser(null) : setsignedinUser(jwtDecode(tk).data)
     }
 
     setauth()
@@ -37,12 +39,12 @@ export default function App() {
   }
 
   return (
-    <AuthContext.Provider value={{ isSignedIn, setisSignedIn }}>
+    <AuthContext.Provider value={{ signedinUser, setsignedinUser }}>
     <NavigationContainer>
       <TailwindProvider>
         <Stack.Navigator>
         {
-           isSignedIn !== null ? (
+           signedinUser !== null ? (
             <Stack.Screen name="home" component={HomeScreen} />
           ) : (
             <Stack.Screen name="auth" component={AuthScreen} />

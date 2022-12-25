@@ -8,19 +8,19 @@ import {
 } from "react-native";
 import React, { useContext, useLayoutEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import AsynStorage from '@react-native-async-storage/async-storage'
 import * as SecureStore from 'expo-secure-store';
 import { AuthContext } from "../lib/swr-hooks";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import jwtDecode from "jwt-decode";
 const AuthScreen = () => {
   const [signinemail, setsigninemail] = useState('')
   const [signinpassword, setsigninpassword] = useState('')
   const navigation = useNavigation();
-  const {setisSignedIn} = useContext(AuthContext)
+  const {setsignedinUser} = useContext(AuthContext)
 
   const handelSignIn = async () => {
     // await SecureStore.deleteItemAsync('user-token')
-    // setisSignedIn('true')
+    // setsignedinUser('true')
     // navigation.navigate('home')
     // const token =  AsynStorage.getItem('user-token').then((tk) => {
     //   // console.log(tk)
@@ -50,12 +50,9 @@ const AuthScreen = () => {
           body: formData
         }).then((res) => res.json()).then(async (data) => {
           if (data[0] == "SUCCESS") {
-            const token =  AsyncStorage.getItem('user-token').then((tk) => {
-              return tk
-            })
             AsyncStorage.setItem('user-token', data[2]).then((tk) => {
               alert("SUCCESS")
-              setisSignedIn('true')
+              setsignedinUser(jwtDecode(data[2]).data)
               navigation.navigate('home')
             })
 
@@ -84,7 +81,7 @@ const AuthScreen = () => {
         style={{ width: 100, height: 100, marginTop: 50 }}
       />
       <Text
-        className="text-white font-bold text-center mt-10"
+        className="text-white text-center mt-10"
         style={{ fontFamily: "signpainter", fontSize: 50 }}
       >
         Bearcats Connect
