@@ -63,7 +63,7 @@ useLayoutEffect(() => {
     <ScrollView className='' refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshData} />} >
       <View className='mt-10 mb-10'>
 
-      <AddPost />
+      <AddPost user={signedinUser} />
       </View>
 
       {feed?.length > 0 ? feed?.map((post, index) => (

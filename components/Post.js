@@ -4,6 +4,7 @@ import {
   Image,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  TouchableNativeFeedback,
 } from "react-native";
 import React, { useContext } from "react";
 // import { AuthContext } from '../lib/swr-hooks'
@@ -16,7 +17,10 @@ import CommentEntry from "./CommentEntry";
 import PostMedia from "./PostMedia";
 import { locationList } from "../lib/swr-hooks";
 import moment from "moment";
+import Comment from "./Comment";
+import { useNavigation } from "@react-navigation/native";
 const Post = ({ user, post, comments }) => {
+  const navigation = useNavigation()
   let postLocation = {
     name:
       post.location !== ""
@@ -35,7 +39,7 @@ const Post = ({ user, post, comments }) => {
       <View className="flex-1">
         <View className="flex-row items-center justify-between mb-0">
           <Image
-            source={{ uri: user?.img }}
+            source={{ uri: post?.profile_picture }}
             resizeMode="cover"
             style={{
               width: 30,
@@ -70,36 +74,29 @@ const Post = ({ user, post, comments }) => {
         </Text>
 
         {post.images.length > 0 ? (
+          <TouchableWithoutFeedback onPress={() => navigation.navigate('postdetails', {
+            pid: post.id,
+            user: user,
+            authorsFirstName: post.fName
+          })}>
+            <View>
           <PostMedia
             files={post.images}
             orientation={post.orientation}
             fileType={"images"}
           />
+          </View>
+          </TouchableWithoutFeedback>
         ) : (
           ""
         )}
-
-        {/* <PostMedia files={[
-          // 'https://images.unsplash.com/photo-1647891938250-954addeb9c51?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80',
-          // 'https://images.unsplash.com/photo-1647891940243-77a6483a152e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80',
-
-          // 'https://images.unsplash.com/photo-1576267423445-b2e0074d68a4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80',
-          // 'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80',
-          // 'https://images.unsplash.com/photo-1647891940243-77a6483a152e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80',
-          
-          
-          'https://images.unsplash.com/photo-1647891940243-77a6483a152e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80',
-          'https://images.unsplash.com/photo-1647891940243-77a6483a152e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80',
-          'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80',
-          'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80',
-
-
-          // 'https://images.unspl1ash.com/photo-1447752875215-b2761acb3c5d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80',
-          // 'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80'
-        ]} orientation={['p', 'l', 'l', 'p']} /> */}
-        <Text className="text-xs self-end text-gray-400 mt-2">
-          {comments?.count} comments
-        </Text>
+        <TouchableOpacity onPress={() => navigation.navigate('commentview', {
+            user: user,
+            pid: post.id,
+            authorsFirstName: post?.fName
+        })} className="text-xs self-end text-gray-400 mt-5">
+          <Text>{comments?.count} comments</Text>
+        </TouchableOpacity>
 
         <View className="flex-row justify-between mt-5 mb-5">
           <TouchableOpacity
@@ -125,7 +122,11 @@ const Post = ({ user, post, comments }) => {
           </TouchableOpacity>
         </View>
 
-        <CommentEntry user={user} />
+        {comments?.count > 0 ? (
+          <Comment user={user} comment={comments.comments[0]} postAuthorId={post.user_id} reply={comments.comments.filter((e) => e.reply_id !== 'null' && e.reply_id == comments.comments[0].id)} />
+        ) : ''}
+
+        <CommentEntry user={user} pid={post?.id} />
       </View>
     </View>
   );

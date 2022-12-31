@@ -12,6 +12,9 @@ import { LoggedIn } from "./lib/swr-hooks";
 import { AuthContext } from "./lib/swr-hooks";
 import AppLoading from "./components/AppLoading";
 import jwtDecode from "jwt-decode";
+import PostDetailsScreen from "./screens/PostDetailsScreen";
+import CommentsViewScreen from "./screens/CommentsViewScreen";
+import NewPostScreen from "./screens/NewPostScreen";
 export default function App() {
   const Stack = createNativeStackNavigator();
   const [signedinUser, setsignedinUser] = useState(null)
@@ -45,7 +48,12 @@ export default function App() {
         <Stack.Navigator>
         {
            signedinUser !== null ? (
+            <>
             <Stack.Screen name="home" component={HomeScreen} />
+            <Stack.Screen name="newpost" component={NewPostScreen} />
+            <Stack.Screen name="postdetails" component={PostDetailsScreen} />
+            <Stack.Screen name="commentview" component={CommentsViewScreen} />
+            </>
           ) : (
             <Stack.Screen name="auth" component={AuthScreen} />
           )
