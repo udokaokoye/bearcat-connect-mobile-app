@@ -1,6 +1,6 @@
-import { View, Text, Image } from 'react-native'
+import { View, Text, Image, TouchableNativeFeedback } from 'react-native'
 import React, { useContext } from 'react'
-import { AuthContext } from '../lib/swr-hooks'
+import { AuthContext, logUserOut } from '../lib/swr-hooks'
 import {MagnifyingGlassIcon} from 'react-native-heroicons/solid'
 
 const HeaderRight = () => {
@@ -10,7 +10,7 @@ const HeaderRight = () => {
       <View style={{width: 30, height: 30}} className='bg-gray-200 rounded-full items-center justify-center mr-3'>
         <MagnifyingGlassIcon color={'#000'} size={15} />
       </View>
-
+        <TouchableNativeFeedback onPress={() => logUserOut()}>
         <View style={{position: 'relative', width: 30, height: 30}}>
         <Image resizeMethod='resize' source={{uri: signedinUser.img }} className=' rounded-full border-solid' 
         style={{
@@ -23,6 +23,7 @@ const HeaderRight = () => {
             borderColor: 'grey',
             }} />
             </View>
+            </TouchableNativeFeedback>
   
     </View>
   )
