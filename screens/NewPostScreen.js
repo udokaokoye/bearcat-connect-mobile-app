@@ -10,8 +10,10 @@ import {
   Button,
   Dimensions,
   Animated,
+  TouchableHighlight,
+  TouchableNativeFeedback,
 } from "react-native";
-import React, { useLayoutEffect, useState, useEffect } from "react";
+import React, { useLayoutEffect, useState, useEffect, useRef } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { useHeaderHeight } from "@react-navigation/elements";
 import {
@@ -23,6 +25,9 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import PostMedia from "../components/PostMedia";
+import RBSheet from "react-native-raw-bottom-sheet";
+import { GetUser } from "../lib/swr-hooks";
+import ProfileCard from "../components/ProfileCard";
 const NewPostScreen = ({ route }) => {
   const [images, setimages] = useState([]);
   const [orientation, setorientation] = useState([])
@@ -35,9 +40,23 @@ const NewPostScreen = ({ route }) => {
 
   const [openTagUserTab, setopenTagUserTab] = useState(false)
 
+  const refRBSheet = useRef();
+  const captionRef = useRef();
+  const {userData, isValidating} = GetUser(user.userId);
 
+  const [searchPhrase, setsearchPhrase] = useState('')
+  const [searchResult, setsearchResult] = useState([])
+  useEffect(() => {
+    // console.log(searchPhrase)
+    fetch(`http://192.168.1.51/bearcats_connect/tagSearch.php?phrase=${searchPhrase}`).then((res) => res.json()).then((data) => {
+    setsearchResult(data)
+    // console.log(data)
+    })
+  }, [searchPhrase])
+  
 
   useLayoutEffect(() => {
+    // console.log(userData.following.following[1])
     navigation.setOptions({
       headerTitle: "Add Post",
       headerRight: () => (
@@ -46,14 +65,13 @@ const NewPostScreen = ({ route }) => {
         }} />
       ),
     });
-  }, [navigation, caption, images, orientation]);
-
+  }, [navigation, caption, images, orientation, isValidating]);
 
   const tagUserListen = (e) => {
     if (e.nativeEvent.key === '@') {
-      console.log("@ pressed")
       setopenTagUserTab(true)
-      // _showBottomView("HIDE")
+      // console.log("@ pressed")
+      refRBSheet.current.open()
     }
   }
 
@@ -84,7 +102,13 @@ const NewPostScreen = ({ route }) => {
   };
 
 
-
+ const tagSelected = (taggedUserInfo) => {
+  setcaption([caption , (<Text className='bg-gray-400 text-xs'>{taggedUserInfo.username}</Text>), ' '])
+  // setcaption(caption + `<Text className='text-red-500'>${taggedUserInfo.username}</Text>`)
+  setsearchResult([])
+  setsearchPhrase('')
+  refRBSheet.current.close()
+ }
 
   const addPost = async () => {
     const formData = new FormData();
@@ -151,6 +175,9 @@ const NewPostScreen = ({ route }) => {
           <TextInput
             onChangeText={e => setcaption(e)}
             // value={caption}
+            
+            autoComplete={false}
+            autoCorrect={false}
             className="mt-5"
             placeholderTextColor={"gray"}
             placeholder={`What's happening ${user.fName}?`}
@@ -159,7 +186,10 @@ const NewPostScreen = ({ route }) => {
               tagUserListen(e)
             }}
             multiline
-          />
+          >
+            
+                <Text>{caption}</Text>
+            </TextInput>
 
           {images.length > 0 &&
             <PostMedia fileType={'image'} files={images} orientation={orientation} />
@@ -168,30 +198,57 @@ const NewPostScreen = ({ route }) => {
           {/* <Button title="click me" onPress={() => addPost()} /> */}
         </ScrollView>
 
-        <View
-          className="rounded-xl items-center p-3"
-          // style={{
-          //   position: 'absolute',
-          //   bottom: 0,
-          //   width: width,
-          //   height: height * 0.3,
-          //   borderWidth: 1,
-          //   borderColor: "#9797976b",
-          // }}
+
+          {/* <View className="w-12 h-2 bg-gray-200 mt-1 mb-3 rounded-xl"></View> */}
+          <RBSheet
+          ref={refRBSheet}
+          closeOnDragDown={true}
+          closeOnPressMask={true}
+          height={Dimensions.get('window').height - headerHeight}
+          customStyles={{
+            wrapper: {
+              backgroundColor: "transparent"
+            },
+            draggableIcon: {
+              backgroundColor: "red"
+            },
+          }}
         >
-          <View className="w-12 h-2 bg-gray-200 mt-1 mb-3 rounded-xl"></View>
-          <View className="flex-row space-x-20 items-center justify-center justify-self-center mb-3">
+          <View style={{position: 'absolute', width: '100%'}} className="flex-row space-x-20 items-center justify-center justify-self-center mt-6 mb-6">
             <TouchableOpacity onPress={() => pickImage()}>
               <PhotoIcon color={"green"} />
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity style={{borderBottomWidth: openTagUserTab ? 1 : 0, paddingBottom: 5}}>
               <UserPlusIcon color={"blue"} />
             </TouchableOpacity>
             <TouchableOpacity>
               <MapPinIcon color={"red"} />
             </TouchableOpacity>
           </View>
-        </View>
+
+          { openTagUserTab ? (
+          <View className='mt-10 p-5'>
+            <Text className='text-xl'>Mention Person</Text>
+
+            <TextInput onChangeText={(txt) => setsearchPhrase(txt)} className='mt-3 rounded-md p-2 mb-5' placeholder="start searching..." style={{width: '100%', borderWidth: 1, borderColor: 'silver'}} />
+            {searchPhrase == '' ? 
+            userData?.following?.following.length > 0 ? userData?.following?.following.slice(0, 15).map((followingUser, index) => (
+              <TouchableNativeFeedback onPress={() => tagSelected(followingUser)}>
+                <View><ProfileCard key={index} user={followingUser}/></View>
+              </TouchableNativeFeedback>
+          )) : ""
+            : searchResult.map((res) => (
+              <TouchableNativeFeedback onPress={() => tagSelected(res)}>
+                <View><ProfileCard user={res} /></View>
+              </TouchableNativeFeedback>
+            ))}
+            {/* {userData?.following?.following.length > 0 ? userData?.following?.following.slice(0, 15).map((followingUser, index) => (
+                <ProfileCard key={index} user={followingUser}/>
+            )) : "" } */}
+          </View>
+          ) : ''}
+        </RBSheet>
+
       </KeyboardAvoidingView>
     </View>
   );
