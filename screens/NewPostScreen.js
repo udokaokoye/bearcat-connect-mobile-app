@@ -11,11 +11,13 @@ import {
   Dimensions,
   Animated,
   TouchableHighlight,
+  Pressable,
   TouchableNativeFeedback,
 } from "react-native";
 import React, { useLayoutEffect, useState, useEffect, useRef } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { useHeaderHeight } from "@react-navigation/elements";
+
 import {
   MapIcon,
   MapPinIcon,
@@ -28,10 +30,16 @@ import PostMedia from "../components/PostMedia";
 import RBSheet from "react-native-raw-bottom-sheet";
 import { GetUser } from "../lib/swr-hooks";
 import ProfileCard from "../components/ProfileCard";
+import { MentionInput, replaceMentionValues } from 'react-native-controlled-mentions'
+import { setStatusBarBackgroundColor } from "expo-status-bar";
 const NewPostScreen = ({ route }) => {
+  var numeral = require('numeral');
+
   const [images, setimages] = useState([]);
   const [orientation, setorientation] = useState([])
   const [caption, setcaption] = useState("");
+  const [suggestions, setsuggestions] = useState([])
+  const [hashtagsSuggestions, sethashtagsSuggestions] = useState([])
   const [token, settoken] = useState(null)
   const navigation = useNavigation();
   const [readyFire, setreadyFire] = useState(false)
@@ -111,6 +119,9 @@ const NewPostScreen = ({ route }) => {
  }
 
   const addPost = async () => {
+    console.log(replaceMentionValues(caption, ({id}) => `@${id}`));
+    alert('check vs code console')
+    return;
     const formData = new FormData();
     if (caption === '') {
         alert("Enter Caption")
@@ -146,8 +157,86 @@ const NewPostScreen = ({ route }) => {
   })
 }
    
-
+const renderSuggestions = ({keyword, onSuggestionPress}) => {
   
+  if (keyword == null) {
+    return null;
+  }
+  fetch(`http://192.168.1.51/bearcats_connect/tagSearch.php?phrase=${keyword}`).then((res) => res.json()).then((data) => {
+    setsuggestions(data)
+    // console.log(data)
+    })
+
+  return (
+    <View style={{width: '100%', height: '100%'}}>
+    <ScrollView nestedScrollEnabled={true} className='bg-white rounded-2xl mt-5' style={{width: 300, height:300}}>
+      {suggestions.length >  0 ? suggestions.map(sugg => (
+        <View key={sugg.id}>
+          <Pressable
+            
+            onPress={() => onSuggestionPress(sugg)}
+
+            style={{padding: 12, borderBottomWidth: 1}}
+            className='flex-row border-gray-200'
+          >
+            <Image 
+            source={{uri: sugg.profile_picture}} 
+            style={{width: 40, height: 40}} 
+            className='rounded-full' />
+            <View className='flex-col ml-3'>
+            <Text className='font-bold'>{sugg.firstName} {sugg.lastName}</Text>
+            <Text className=' font-semibold'><MapPinIcon color='red' size={15} /> {sugg.campus}</Text>
+            </View>
+          </Pressable>
+
+          </View>
+        )) : (
+          <View>
+            <Text className='text-center mt-5 font-bold'>Start searching...</Text>
+          </View>
+        )
+      }
+    </ScrollView>
+    </View>
+  );
+};
+
+
+const renderHashTags = ({keyword, onSuggestionPress}) => {
+  
+  if (keyword == null) {
+    return null;
+  }
+  fetch(`http://192.168.1.51/bearcats_connect/hashTagSearch.php?phrase=${keyword}`).then((res) => res.json()).then((data) => {
+    sethashtagsSuggestions(data)
+    // console.log(data)
+    })
+
+  return(
+    <View className='mt-5'>
+      {hashtagsSuggestions.length > 0 ? hashtagsSuggestions.map((hashtagSugg) => (
+
+          <Pressable
+            
+            onPress={() => onSuggestionPress(hashtagSugg)}
+
+            style={{padding: 12, borderBottomWidth: 1}}
+            className='flex-row border-gray-200'
+          >
+            <View className='flex-col'>
+            <Text className='font-bold'>#{hashtagSugg.tag}</Text>
+            {/* <Text className=' font-semibold'>{numeral(hashtagSugg.count).formats('0 a')} </Text> */}
+            </View>
+          </Pressable>
+      )) : (
+        <View>
+          <Text>Trending Now</Text>
+        </View>
+      )}
+    </View>
+  )
+
+}
 
 
 
@@ -172,7 +261,30 @@ const NewPostScreen = ({ route }) => {
               {user.fName + " " + user.lName}
             </Text>
           </View>
-          <TextInput
+
+          <MentionInput
+          value={caption}
+          onChange={(txt) => setcaption(txt)}
+
+          partTypes={[
+            {
+              trigger: '@', // Should be a single character like '@' or '#'
+              renderSuggestions,
+              textStyle: {fontWeight: 'bold', color: 'blue'}, // The mention style in the input
+              isBottomMentionSuggestionsRender: true
+            },
+            {
+              trigger: '#',
+              renderSuggestions: renderHashTags,
+              textStyle: {fontWeight: 'bold', color: 'red'}, // The mention style in the input
+              isBottomMentionSuggestionsRender: true
+            }
+          ]}
+          // style={{height: 300,}}
+          placeholder={`What's happening ${user.fName}?`}
+          className='mt-5'
+          />
+          {/* <TextInput
             onChangeText={e => setcaption(e)}
             // value={caption}
             
@@ -189,7 +301,7 @@ const NewPostScreen = ({ route }) => {
           >
             
                 <Text>{caption}</Text>
-            </TextInput>
+            </TextInput> */}
 
           {images.length > 0 &&
             <PostMedia fileType={'image'} files={images} orientation={orientation} />
