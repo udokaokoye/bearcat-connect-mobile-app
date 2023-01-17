@@ -5,8 +5,9 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   TouchableNativeFeedback,
+  Pressable,
 } from "react-native";
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 // import { AuthContext } from '../lib/swr-hooks'
 import { HeartIcon, MapPinIcon } from "react-native-heroicons/outline";
 import {
@@ -19,25 +20,57 @@ import { locationList } from "../lib/swr-hooks";
 import moment from "moment";
 import Comment from "./Comment";
 import { useNavigation } from "@react-navigation/native";
-const Post = ({ user, post, comments }) => {
+import reactStringReplace from 'react-string-replace';
+const Post = ({ user, post, comments, tags }) => {
+  const [caption, setcaption] = useState(post?.caption)
+  const [tgcounter, settgcounter] = useState(0)
   const navigation = useNavigation()
   let postLocation = {
     name:
-      post.location !== ""
-        ? locationList.filter((e) => e.id == post.location)[0].name
-        : "",
+    post.location !== ""
+    ? locationList.filter((e) => e.id == post.location)[0].name
+    : "",
     campus:
-      post.location !== ""
-        ? locationList.filter((e) => e.id == post.location)[0].campus
-        : "",
+    post.location !== ""
+    ? locationList.filter((e) => e.id == post.location)[0].campus
+    : "",
   };
+  // setcaption(post.caption)
+  const [replacedtext, setreplacedtext] = useState(post?.caption)
+// let replacedText = '1111';
+var rtext = post?.caption
+
+useEffect(() => {
+  if (tags.length > 0) {
+    // console.log("hipp")
+    tags.forEach(tag => {
+      // console.log(tag)
+      rtext = reactStringReplace(rtext, `@${tag.tagged_userid}`, (match, i) => (
+        <Pressable key={match + i} onPress={() => navigation.navigate('profile', {uid: tag.tagged_userid})}><Text style={{fontSize: 12}} className='text-red-700 font-bold' >{tag.firstName} {tag.lastName}</Text></Pressable> 
+      )
+  )
+      setreplacedtext(rtext)
+
+
+    });
+  }
+}, [])
+
+  
   return (
     <View
       className="flex-row bg-white p-3 mb-10 self-center rounded-lg"
-      style={{ width: "100%" }}
+      style={{ width: "100%", shadowColor: '#0000007b',
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.3,
+      shadowRadius: 2,  
+      elevation: 10, }}
     >
       <View className="flex-1">
         <View className="flex-row items-center justify-between mb-0">
+          <Pressable onPress={() => navigation.navigate("profile", {
+            uid: post.user_id
+          })}>
           <Image
             source={{ uri: post?.profile_picture }}
             resizeMode="cover"
@@ -47,11 +80,13 @@ const Post = ({ user, post, comments }) => {
             }}
             className="rounded-full"
           />
+          </Pressable>
 
           <View className="flex-row items-center justify-between flex-1 ml-3">
             <Text className="text-lg flex-1">
               {post?.fName + " " + post?.lName}{" "}
               <Text className=" text-xs">@{post.username}</Text>
+              {/* <Text>{tags.length}</Text> */}
             </Text>
             <Text className="">...</Text>
           </View>
@@ -70,7 +105,7 @@ const Post = ({ user, post, comments }) => {
 
         <Text className="text-xs text-gray-500 mb-2 ml-10">{moment(post?.createdDate).fromNow()}</Text>
         <Text className=" text-sm" style={{ width: "100%" }}>
-          {post.caption}
+          {replacedtext}
         </Text>
 
         {post.images.length > 0 ? (

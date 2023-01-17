@@ -32,14 +32,17 @@ import { GetUser } from "../lib/swr-hooks";
 import ProfileCard from "../components/ProfileCard";
 import { MentionInput, replaceMentionValues } from 'react-native-controlled-mentions'
 import { setStatusBarBackgroundColor } from "expo-status-bar";
+import {mutate} from 'swr'
+import numeral from "numeral";
 const NewPostScreen = ({ route }) => {
-  var numeral = require('numeral');
+  // var numeral = require('numeral');
 
   const [images, setimages] = useState([]);
   const [orientation, setorientation] = useState([])
   const [caption, setcaption] = useState("");
   const [suggestions, setsuggestions] = useState([])
   const [hashtagsSuggestions, sethashtagsSuggestions] = useState([])
+  // const [tggdUsers, settggdUsers] = useState([])
   const [token, settoken] = useState(null)
   const navigation = useNavigation();
   const [readyFire, setreadyFire] = useState(false)
@@ -119,19 +122,26 @@ const NewPostScreen = ({ route }) => {
  }
 
   const addPost = async () => {
-    console.log(replaceMentionValues(caption, ({id}) => `@${id}`));
-    alert('check vs code console')
-    return;
+    // console.log(replaceMentionValues(caption, ({id}) => `@${id}`));
+    // alert('check vs code console')
+    var taggedUsers = []
+    replaceMentionValues(caption, ({id}) => {
+      taggedUsers.push(id)
+    })
+    // return;
     const formData = new FormData();
     if (caption === '') {
         alert("Enter Caption")
         return false;
       }
+      // console.log(taggedUsers)
+      // return;
   formData.append("userId", user.userId)
-  formData.append("caption", caption)
+  formData.append("caption", replaceMentionValues(caption, ({id}) => `@${id}`))
   formData.append("location", '')
   formData.append("orientation[]", orientation)
-  console.log(images.length)
+  formData.append("taggedUsers", taggedUsers)
+  // console.log(images.length)
 //   return;
 
   for (let i = 0; i < images.length; i++) {
@@ -153,7 +163,9 @@ const NewPostScreen = ({ route }) => {
      },
   }).then((res) => res.json()).then((data) => {
       setcaption('')
+      mutate('http://192.168.1.51/bearcats_connect/getFeed.php?portion=all')
       console.log(data)
+      navigation.navigate('home')
   })
 }
    
@@ -174,7 +186,7 @@ const renderSuggestions = ({keyword, onSuggestionPress}) => {
         <View key={sugg.id}>
           <Pressable
             
-            onPress={() => onSuggestionPress(sugg)}
+            onPress={() => onSuggestionPress({...sugg, name: sugg.username})}
 
             style={{padding: 12, borderBottomWidth: 1}}
             className='flex-row border-gray-200'
@@ -217,15 +229,15 @@ const renderHashTags = ({keyword, onSuggestionPress}) => {
       {hashtagsSuggestions.length > 0 ? hashtagsSuggestions.map((hashtagSugg) => (
 
           <Pressable
-            
-            onPress={() => onSuggestionPress(hashtagSugg)}
+            key={hashtagSugg.id}
+            onPress={() => onSuggestionPress({...hashtagSugg, name: `${hashtagSugg.tag}`})}
 
             style={{padding: 12, borderBottomWidth: 1}}
             className='flex-row border-gray-200'
           >
             <View className='flex-col'>
             <Text className='font-bold'>#{hashtagSugg.tag}</Text>
-            {/* <Text className=' font-semibold'>{numeral(hashtagSugg.count).formats('0 a')} </Text> */}
+            <Text className=' font-semibold italic'>{numeral(hashtagSugg.count).format('0a')} posts</Text>
             </View>
           </Pressable>
       )) : (
@@ -270,7 +282,7 @@ const renderHashTags = ({keyword, onSuggestionPress}) => {
             {
               trigger: '@', // Should be a single character like '@' or '#'
               renderSuggestions,
-              textStyle: {fontWeight: 'bold', color: 'blue'}, // The mention style in the input
+              textStyle: {fontWeight: 'bold', color: 'black', backgroundColor: '#bcbbbb', fontSize: 10}, // The mention style in the input
               isBottomMentionSuggestionsRender: true
             },
             {
@@ -282,7 +294,8 @@ const renderHashTags = ({keyword, onSuggestionPress}) => {
           ]}
           // style={{height: 300,}}
           placeholder={`What's happening ${user.fName}?`}
-          className='mt-5'
+          className='mt-5 py-5'
+          style={{height: 'auto'}}
           />
           {/* <TextInput
             onChangeText={e => setcaption(e)}
@@ -310,6 +323,25 @@ const renderHashTags = ({keyword, onSuggestionPress}) => {
           {/* <Button title="click me" onPress={() => addPost()} /> */}
         </ScrollView>
 
+    <View style={{ width: '100%', height: 120, bottom: 0, shadowColor: '#0000007b',
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.6,
+      shadowRadius: 20,  
+      elevation: 10, backgroundColor: 'white'}} className='rounded-xl'>
+      <Pressable onPress={() => refRBSheet.current.open()} className="w-12 h-2 bg-gray-200 mt-2 mb-3 rounded-3xl self-center"></Pressable>
+    <View  className="flex-row space-x-20 items-center justify-center justify-self-center mt-6 mb-6">
+                <TouchableOpacity onPress={() => pickImage()}>
+                  <PhotoIcon color={"green"} />
+                </TouchableOpacity>
+                <TouchableOpacity style={{borderBottomWidth: openTagUserTab ? 1 : 0, paddingBottom: 5}}>
+                  <UserPlusIcon color={"blue"} />
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <MapPinIcon color={"red"} />
+                </TouchableOpacity>
+              </View>
+    </View>
+
 
           {/* <View className="w-12 h-2 bg-gray-200 mt-1 mb-3 rounded-xl"></View> */}
           <RBSheet
@@ -326,7 +358,7 @@ const renderHashTags = ({keyword, onSuggestionPress}) => {
             },
           }}
         >
-          <View style={{position: 'absolute', width: '100%'}} className="flex-row space-x-20 items-center justify-center justify-self-center mt-6 mb-6">
+          <View style={{position: 'absolute', width: '100%'}} className="flex-row space-x-20 items-center justify-center justify-self-center mt-10 mb-10">
             <TouchableOpacity onPress={() => pickImage()}>
               <PhotoIcon color={"green"} />
             </TouchableOpacity>
