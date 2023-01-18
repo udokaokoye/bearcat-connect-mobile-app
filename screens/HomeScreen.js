@@ -24,7 +24,7 @@ const HomeScreen = () => {
 
 useLayoutEffect(() => {
   navigation.setOptions({
-    headerTitle: 'Feedd',
+    headerTitle: 'Feed',
     headerTitleAlign: 'center',
     headerLeft: () => (
       <HeaderLeft />
