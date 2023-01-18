@@ -10,18 +10,21 @@ import {
 import React, { useContext, useEffect, useState } from "react";
 // import { AuthContext } from '../lib/swr-hooks'
 import { HeartIcon, MapPinIcon } from "react-native-heroicons/outline";
+import {HeartIcon as SolidHeartIcon} from 'react-native-heroicons/solid';
 import {
   ChatBubbleOvalLeftIcon,
   ShareIcon,
 } from "react-native-heroicons/outline";
 import CommentEntry from "./CommentEntry";
 import PostMedia from "./PostMedia";
-import { locationList } from "../lib/swr-hooks";
+import { locationList, getPost } from "../lib/swr-hooks";
 import moment from "moment";
 import Comment from "./Comment";
 import { useNavigation } from "@react-navigation/native";
 import reactStringReplace from 'react-string-replace';
-const Post = ({ user, post, comments, tags }) => {
+import { mutate } from "swr";
+import numeral from "numeral";
+const Post = ({ user, post, comments, tags, reactions }) => {
   const [caption, setcaption] = useState(post?.caption)
   const [tgcounter, settgcounter] = useState(0)
   const navigation = useNavigation()
@@ -39,7 +42,18 @@ const Post = ({ user, post, comments, tags }) => {
   const [replacedtext, setreplacedtext] = useState(post?.caption)
 // let replacedText = '1111';
 var rtext = post?.caption
+// const reacData = getPost(post.id).post;
+var freshReactions = getPost(post.id).post;
 
+
+// useEffect(() => {
+//   var freshReactions = reacData;
+// }, [reacData])
+
+
+const alreadyLiked = freshReactions?.reactions.data.some(reaction => {
+  return reaction.userId == user.userId
+});
 useEffect(() => {
   if (tags.length > 0) {
     // console.log("hipp")
@@ -54,7 +68,23 @@ useEffect(() => {
 
     });
   }
+
+  // console.log(post.orientation)
 }, [])
+
+const postReaction = () => {
+const formData = new FormData();
+  // console.log(alreadyLiked)
+  // return;
+
+formData.append('userId', user.userId)
+formData.append('postId', post.id)
+
+  fetch(`http://192.168.1.51/bearcats_connect/reactions.php${alreadyLiked ? '?unlike=true' : ''}`, {method: "POST", body: formData}).then((res) => res.json()).then((data) => {
+    // console.log(data)
+    mutate(`http://192.168.1.51/bearcats_connect/getPost.php?postId=${post.id}`)
+  })
+}
 
   
   return (
@@ -117,7 +147,7 @@ useEffect(() => {
             <View>
           <PostMedia
             files={post.images}
-            orientation={post.orientation}
+            orientation={post?.orientation.toString().split(',')}
             fileType={"images"}
           />
           </View>
@@ -125,20 +155,26 @@ useEffect(() => {
         ) : (
           ""
         )}
+        <View className='flex-row items-center justify-between mt-5'>
+          <TouchableOpacity>
+            <Text>{numeral(reactions.count).format('0a')} likes</Text>
+          </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate('commentview', {
             user: user,
             pid: post.id,
             authorsFirstName: post?.fName
-        })} className="text-xs self-end text-gray-400 mt-5">
-          <Text>{comments?.count} comments</Text>
+        })} className="text-xs text-gray-400">
+          <Text>{numeral(comments?.count).format('0a')} comments</Text>
         </TouchableOpacity>
+        </View>
 
         <View className="flex-row justify-between mt-5 mb-5">
           <TouchableOpacity
             className="flex-row items-center justify-center rounded-md bg-gray-300"
             style={{ width: "30%", height: 30 }}
+            onPress={() => postReaction()}
           >
-            <HeartIcon color={"red"} />
+            {alreadyLiked ? (<SolidHeartIcon color={'red'} />) : (<HeartIcon color={"red"} />)}
             <Text className="ml-1 text-xs">Like</Text>
           </TouchableOpacity>
           <TouchableOpacity

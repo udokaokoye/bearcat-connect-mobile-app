@@ -22,6 +22,11 @@ const PostDetailsScreen = ({ route }) => {
 
   }, [navigation]);
 
+  useEffect(() => {
+    console.log(postData.orientation[1])
+  }, [])
+  
+
 
   return (
     <ScrollView style={{flex:1}}>
@@ -85,7 +90,7 @@ const PostDetailsScreen = ({ route }) => {
 
 {postData?.images.map((img, index) => (
 <View key={index} className=' mt-2 mb-3 bg-white'>
-    <Image resizeMode="contain" source={{uri: img}} style={{width: "100%", height: postData?.orientation[index] == 'p' ? 600 : 300}}/>
+    <Image resizeMode="contain" source={{uri: img}} style={{width: "100%", height: postData?.orientation.split(',')[index] == 'p' ? 600 : 300}}/>
 </View>
 ))}
 </ScrollView>

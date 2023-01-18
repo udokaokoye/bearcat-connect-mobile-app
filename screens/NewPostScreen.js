@@ -139,7 +139,7 @@ const NewPostScreen = ({ route }) => {
   formData.append("userId", user.userId)
   formData.append("caption", replaceMentionValues(caption, ({id}) => `@${id}`))
   formData.append("location", '')
-  formData.append("orientation[]", orientation)
+  formData.append("orientation", orientation)
   formData.append("taggedUsers", taggedUsers)
   // console.log(images.length)
 //   return;

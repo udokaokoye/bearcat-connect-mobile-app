@@ -3,6 +3,7 @@ import React from 'react'
 
 const PostMedia = ({fileType, files, orientation}) => {
     // console.log(Image.getSize(files[0]))
+    // console.log(orientation[1])
   if (files.length == 1) {
     return (
       <View className='mt-5'>

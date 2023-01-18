@@ -68,7 +68,7 @@ useLayoutEffect(() => {
 
       {feed?.length > 0 ? feed?.map((post, index) => (
         <View key={post.post.id} className="self-center" style={{width: '95%'}}>
-        <Post user={signedinUser} post={post.post} tags={post.tags} comments={post.comments} />
+        <Post user={signedinUser} post={post.post} tags={post.tags} comments={post.comments} reactions={post.reactions} />
         </View>
       )) : <Text>No Post Available</Text>}
       {/* <Text className=' text-red-600 '>{signedinUser.fName} {signedinUser.lName}</Text> */}
