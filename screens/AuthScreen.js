@@ -9,9 +9,10 @@ import {
 import React, { useContext, useLayoutEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import * as SecureStore from 'expo-secure-store';
-import { AuthContext } from "../lib/swr-hooks";
+import { AuthContext, server } from "../lib/swr-hooks";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import jwtDecode from "jwt-decode";
+// import {server} from '../lib/swr-hooks'
 const AuthScreen = () => {
   const [signinemail, setsigninemail] = useState('')
   const [signinpassword, setsigninpassword] = useState('')
@@ -43,7 +44,7 @@ const AuthScreen = () => {
     } else {
         formData.append('user', signinemail)
         formData.append('password', signinpassword)
-        const url = signinemail.includes("@mail.uc.edu") ? "http://192.168.1.51/bearcats_connect/login.php" : "http://192.168.1.51/bearcats_connect/login.php?withUsername=1"
+        const url = signinemail.includes("@mail.uc.edu") ? `http://${server}/bearcats_connect/login.php` : `http://${server}/bearcats_connect/login.php?withUsername=1`
 
         fetch(url, {
           method: "POST",
