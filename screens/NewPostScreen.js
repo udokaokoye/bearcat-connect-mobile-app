@@ -28,7 +28,7 @@ import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import PostMedia from "../components/PostMedia";
 import RBSheet from "react-native-raw-bottom-sheet";
-import { GetUser } from "../lib/swr-hooks";
+import { GetUser, server } from "../lib/swr-hooks";
 import ProfileCard from "../components/ProfileCard";
 import { MentionInput, replaceMentionValues } from 'react-native-controlled-mentions'
 import { setStatusBarBackgroundColor } from "expo-status-bar";
@@ -59,7 +59,7 @@ const NewPostScreen = ({ route }) => {
   const [searchResult, setsearchResult] = useState([])
   useEffect(() => {
     // console.log(searchPhrase)
-    fetch(`http://192.168.1.51/bearcats_connect/tagSearch.php?phrase=${searchPhrase}`).then((res) => res.json()).then((data) => {
+    fetch(`http://${server}/bearcats_connect/tagSearch.php?phrase=${searchPhrase}`).then((res) => res.json()).then((data) => {
     setsearchResult(data)
     // console.log(data)
     })
@@ -155,7 +155,7 @@ const NewPostScreen = ({ route }) => {
     formData.append("files[]", { uri: images[i], name: filename, type });
   }
 
-  fetch('http://192.168.1.51/bearcats_connect/posts.php', {
+  fetch(`http://${server}/bearcats_connect/posts.php`, {
       method: "POST",
       body: formData,
       headers: {
@@ -163,7 +163,7 @@ const NewPostScreen = ({ route }) => {
      },
   }).then((res) => res.json()).then((data) => {
       setcaption('')
-      mutate('http://192.168.1.51/bearcats_connect/getFeed.php?portion=all')
+      mutate(`http://${server}/bearcats_connect/getFeed.php?portion=all`)
       console.log(data)
       navigation.navigate('home')
   })
@@ -174,7 +174,7 @@ const renderSuggestions = ({keyword, onSuggestionPress}) => {
   if (keyword == null) {
     return null;
   }
-  fetch(`http://192.168.1.51/bearcats_connect/tagSearch.php?phrase=${keyword}`).then((res) => res.json()).then((data) => {
+  fetch(`http://${server}/bearcats_connect/tagSearch.php?phrase=${keyword}`).then((res) => res.json()).then((data) => {
     setsuggestions(data)
     // console.log(data)
     })
@@ -219,7 +219,7 @@ const renderHashTags = ({keyword, onSuggestionPress}) => {
   if (keyword == null) {
     return null;
   }
-  fetch(`http://192.168.1.51/bearcats_connect/hashTagSearch.php?phrase=${keyword}`).then((res) => res.json()).then((data) => {
+  fetch(`http://${server}/bearcats_connect/hashTagSearch.php?phrase=${keyword}`).then((res) => res.json()).then((data) => {
     sethashtagsSuggestions(data)
     // console.log(data)
     })

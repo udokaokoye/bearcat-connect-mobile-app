@@ -16,6 +16,7 @@ import PostDetailsScreen from "./screens/PostDetailsScreen";
 import CommentsViewScreen from "./screens/CommentsViewScreen";
 import NewPostScreen from "./screens/NewPostScreen";
 import ProfileScreen from "./screens/ProfileScreen";
+import SearchScreen from "./screens/SearchScreen";
 export default function App() {
   const Stack = createNativeStackNavigator();
   const [signedinUser, setsignedinUser] = useState(null)
@@ -55,6 +56,7 @@ export default function App() {
             <Stack.Screen name="postdetails" component={PostDetailsScreen} />
             <Stack.Screen name="commentview" component={CommentsViewScreen} />
             <Stack.Screen name="profile" component={ProfileScreen} />
+            <Stack.Screen name="search" component={SearchScreen} />
             </>
           ) : (
             <Stack.Screen name="auth" component={AuthScreen} />

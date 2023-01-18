@@ -17,7 +17,7 @@ import {
 } from "react-native-heroicons/outline";
 import CommentEntry from "./CommentEntry";
 import PostMedia from "./PostMedia";
-import { locationList, getPost } from "../lib/swr-hooks";
+import { locationList, getPost, server } from "../lib/swr-hooks";
 import moment from "moment";
 import Comment from "./Comment";
 import { useNavigation } from "@react-navigation/native";
@@ -80,9 +80,9 @@ const formData = new FormData();
 formData.append('userId', user.userId)
 formData.append('postId', post.id)
 
-  fetch(`http://192.168.1.51/bearcats_connect/reactions.php${alreadyLiked ? '?unlike=true' : ''}`, {method: "POST", body: formData}).then((res) => res.json()).then((data) => {
+  fetch(`http://${server}/bearcats_connect/reactions.php${alreadyLiked ? '?unlike=true' : ''}`, {method: "POST", body: formData}).then((res) => res.json()).then((data) => {
     // console.log(data)
-    mutate(`http://192.168.1.51/bearcats_connect/getPost.php?postId=${post.id}`)
+    mutate(`http://${server}/bearcats_connect/getPost.php?postId=${post.id}`)
   })
 }
 

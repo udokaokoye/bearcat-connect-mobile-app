@@ -3,7 +3,7 @@ import React, { useContext, useState, useLayoutEffect, useEffect } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useNavigation } from '@react-navigation/native'
 import {useHeaderHeight} from '@react-navigation/elements'
-import { AuthContext, getFeed, getLoggedInUser } from '../lib/swr-hooks'
+import { AuthContext, getFeed, getLoggedInUser, server } from '../lib/swr-hooks'
 import HeaderLeft from '../components/HeaderLeft'
 import HeaderRight from '../components/HeaderRight'
 import AddPost from '../components/AddPost'
@@ -11,6 +11,7 @@ import Post from '../components/Post'
 import { mutate } from 'swr'
 const HomeScreen = () => {
   const {feed, feedValidating} = getFeed("all")
+  const [layoutMounted, setlayoutMounted] = useState(false)
   const headerHeight = useHeaderHeight()
   const {setsignedinUser, signedinUser} = useContext(AuthContext)
   const navigation = useNavigation()
@@ -33,7 +34,9 @@ useLayoutEffect(() => {
       <HeaderRight />
     ),
   })
-}, [])
+setTimeout(() => {
+  setlayoutMounted(true)
+}, 2000);}, [])
   
   const handleLogout = () => {
     AsyncStorage.removeItem('user-token').then((e) => {
@@ -51,13 +54,13 @@ useLayoutEffect(() => {
   }
   const refreshData = async () => {
     setrefreshing(true)
-    await mutate('http://192.168.1.51/bearcats_connect/getFeed.php?portion=all')
+    await mutate(`http://${server}/bearcats_connect/getFeed.php?portion=all`)
     setrefreshing(false)
   }
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}
     style={{flex: 1}}
-    keyboardVerticalOffset={headerHeight}
+    keyboardVerticalOffset={layoutMounted ? headerHeight : 0}
     >
        
     <ScrollView className='' refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshData} />} >

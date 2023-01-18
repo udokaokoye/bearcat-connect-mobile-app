@@ -1,16 +1,23 @@
-import { View, Text, Image, TouchableNativeFeedback } from 'react-native'
+import { View, Text, Image, TouchableNativeFeedback, Pressable } from 'react-native'
 import React, { useContext } from 'react'
 import { AuthContext, logUserOut } from '../lib/swr-hooks'
 import {MagnifyingGlassIcon} from 'react-native-heroicons/solid'
+import { useNavigation } from '@react-navigation/native'
 
 const HeaderRight = () => {
-    const {signedinUser} = useContext(AuthContext)
+    const {signedinUser, setsignedinUser} = useContext(AuthContext)
+    const navigation = useNavigation();
   return (
     <View className='flex-row items-center'>
-      <View style={{width: 30, height: 30}} className='bg-gray-200 rounded-full items-center justify-center mr-3'>
+      <Pressable onPress={() => navigation.navigate('search', {
+        user: signedinUser
+      })} style={{width: 30, height: 30}} className='bg-gray-200 rounded-full items-center justify-center mr-3'>
         <MagnifyingGlassIcon color={'#000'} size={15} />
-      </View>
-        <TouchableNativeFeedback onPress={() => logUserOut()}>
+      </Pressable>
+        <TouchableNativeFeedback onPress={() => {
+          logUserOut(navigation)
+          setsignedinUser(null)
+        }}>
         <View style={{position: 'relative', width: 30, height: 30}}>
         <Image resizeMethod='resize' source={{uri: signedinUser.img }} className=' rounded-full border-solid' 
         style={{

@@ -72,12 +72,11 @@ const AuthScreen = () => {
   }, []);
 
   return (
-    <SafeAreaView
+    <View
       className="flex-1 text-white align-baseline items-center"
       style={{ backgroundColor: "#02212F", width: "100%" }}
     >
       <Image
-        className=""
         source={require("../assets/bcatslogo.png")}
         style={{ width: 100, height: 100, marginTop: 50 }}
       />
@@ -118,7 +117,7 @@ const AuthScreen = () => {
 
         <Text className='text-white mt-8' style={{width: "70%"}}>Don't have an account <Text className='text-red-500 font-bold'>Sign Up</Text></Text>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
