@@ -354,7 +354,7 @@ const renderHashTags = ({keyword, onSuggestionPress}) => {
               backgroundColor: "transparent"
             },
             draggableIcon: {
-              backgroundColor: "red"
+              backgroundColor: "#aab8b9"
             },
           }}
         >
