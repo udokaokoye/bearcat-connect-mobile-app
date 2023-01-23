@@ -1,7 +1,7 @@
 import { View, Text, ScrollView , Image, TouchableOpacity, TouchableWithoutFeedback, KeyboardAvoidingView, Platform} from 'react-native'
-import React, {useLayoutEffect, useState} from 'react'
+import React, {useLayoutEffect, useState, useEffect, useContext} from 'react'
 import { useNavigation } from '@react-navigation/native';
-import { getPost } from '../lib/swr-hooks';
+import { CommentReply, getPost } from '../lib/swr-hooks';
 import {useHeaderHeight} from '@react-navigation/elements'
 import moment from 'moment';
 import PostMedia from '../components/PostMedia';
@@ -9,11 +9,12 @@ import { HeartIcon, ChatBubbleBottomCenterIcon, ChevronDownIcon } from 'react-na
 import Comment from '../components/Comment';
 import CommentEntry from '../components/CommentEntry';
 // import  from 'react-native-heroicons/solid';
-
 const CommentsViewScreen = ({route}) => {
-    const navigation = useNavigation()
-    const { pid, user, authorsFirstName } = route.params;
-    const { post, postValidating } = getPost(pid);
+  const navigation = useNavigation()
+  const { pid, user, authorsFirstName } = route.params;
+  const { post, postValidating } = getPost(pid);
+  const { replyComment, setreplyComment } = useContext(CommentReply);
+
     const postData = post?.post;
     const headerHeight = useHeaderHeight()
     const comments = post?.comments.comments.filter((e) => e.reply_id == "null")
@@ -27,12 +28,15 @@ const CommentsViewScreen = ({route}) => {
         });
     
       }, [navigation]);
+
+
+      
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}
     style={{flex: 1}}
-    keyboardVerticalOffset={Platform.OS === "ios" ? headerHeight : headerHeight + 15}
+    keyboardVerticalOffset={Platform.OS === "ios" ? headerHeight : headerHeight}
     >
-    <ScrollView style={{flex:1}}>
+    <ScrollView>
     <View className="bg-white mt-2 p-3">
       <View className="flex-row">
         <Image
@@ -122,9 +126,11 @@ const CommentsViewScreen = ({route}) => {
     </View>
 
 </ScrollView>
+
 <View className='h-20 bg-white pt-5 px-3'>
-    <CommentEntry user={user} pid={pid} />
+    <CommentEntry user={user} pid={pid} replying={replyComment[0]} replydeets={replyComment} />
 </View>
+
 </KeyboardAvoidingView>
   )
 }

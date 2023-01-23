@@ -8,7 +8,7 @@ import AuthScreen from "./screens/AuthScreen";
 import { useState, useEffect, createContext } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from 'expo-secure-store';
-import { LoggedIn } from "./lib/swr-hooks";
+import { CommentReply, LoggedIn } from "./lib/swr-hooks";
 import { AuthContext } from "./lib/swr-hooks";
 import AppLoading from "./components/AppLoading";
 import jwtDecode from "jwt-decode";
@@ -20,9 +20,12 @@ import SearchScreen from "./screens/SearchScreen";
 export default function App() {
   const Stack = createNativeStackNavigator();
   const [signedinUser, setsignedinUser] = useState(null)
-  //  AsyncStorage.getItem('user-token').then((token) => {
-  //   setsignedinUser(token == null ? false : true)
-  // })
+  const [replyComment, setreplyComment] = useState([false, {
+    pid: '',
+    replyId: '',
+    name: ''
+  }])
+
 
   useEffect( () => {
     async function setauth() {
@@ -45,6 +48,7 @@ export default function App() {
 
   return (
     <AuthContext.Provider value={{ signedinUser, setsignedinUser }}>
+      <CommentReply.Provider value={{replyComment, setreplyComment}}>
     <NavigationContainer>
       <TailwindProvider>
         <Stack.Navigator>
@@ -65,6 +69,7 @@ export default function App() {
         </Stack.Navigator>
       </TailwindProvider>
     </NavigationContainer>
+    </CommentReply.Provider>
     </AuthContext.Provider>
   );
 }

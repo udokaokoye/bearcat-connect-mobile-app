@@ -9,6 +9,7 @@ import { ChatBubbleBottomCenterIcon } from "react-native-heroicons/outline";
 
 const PostDetailsScreen = ({ route }) => {
   const { pid, user, authorsFirstName } = route.params;
+
   const navigation = useNavigation();
   const { post, postValidating } = getPost(pid);
   const postData = post?.post;

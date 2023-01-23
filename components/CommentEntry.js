@@ -1,16 +1,26 @@
 
 import { View, Text, Image, TextInput } from 'react-native'
-import React, {useState} from 'react'
+import React, {useContext, useState, useEffect, useRef} from 'react'
 import { mutate } from 'swr'
+import { CommentReply } from '../lib/swr-hooks'
 
 const CommentEntry = ({user, pid, replyId=null}) => {
-  const [comment, setcomment] = useState('')
+  const { replyComment, setreplyComment } = useContext(CommentReply);
+  const [comment, setcomment] = useState("")
+  const refInput = useRef();
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (replyComment[0]) {
+        setcomment(`@${replyComment[1].name} `)
+        refInput.current.focus()
+      } else {
+        setreplyComment('')
+      }
+    }, 500);
+  }, [replyComment])
 
   const handleSubmmitComment = (e) => {
-
-    // alert("Comment");
-    // return
-
         const formData = new FormData();
         formData.append('comment', comment)
         formData.append('user_id', user.userId)
@@ -38,7 +48,7 @@ const CommentEntry = ({user, pid, replyId=null}) => {
   return (
     <View className='flex-row justify-between'>
       <Image className='rounded-full' source={{uri: user?.img}} resizeMode='cover' style={{width: 30, height: 30}} />
-      <TextInput onChangeText={(e) => setcomment(e)} className='flex-1 ml-5 bg-gray-200 rounded-md h-9 px-3' placeholder='Write a comment...' returnKeyType='send' onSubmitEditing={handleSubmmitComment} value={comment} />
+      <TextInput ref={refInput} onChangeText={(e) => setcomment(e)} className='flex-1 ml-5 bg-gray-200 rounded-md h-9 px-3' placeholder='Write a comment...' returnKeyType='send' onSubmitEditing={handleSubmmitComment} value={comment} />
     </View>
   )
 }
