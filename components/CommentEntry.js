@@ -11,11 +11,11 @@ const CommentEntry = ({user, pid, replyId=null}) => {
 
   useEffect(() => {
     setTimeout(() => {
-      if (replyComment[0]) {
+      if (replyComment[0] == true) {
         setcomment(`@${replyComment[1].name} `)
         refInput.current.focus()
       } else {
-        setreplyComment('')
+        setreplyComment("")
       }
     }, 500);
   }, [replyComment])
@@ -24,16 +24,21 @@ const CommentEntry = ({user, pid, replyId=null}) => {
         const formData = new FormData();
         formData.append('comment', comment)
         formData.append('user_id', user.userId)
-        formData.append("post_id", pid)
-        formData.append('reply_id', replyId)
+        formData.append("post_id", replyComment[0] ? replyComment[1].pid : pid)
+        formData.append('reply_id', replyComment[0] ? replyComment[1].replyId : replyId)
 
         if (comment !== '' || comment !== null || comment !== ' ') {
             fetch(`${server}/comment.php`, {
                 method: "POST",
                 body: formData
             }).then((res) => res.json()).then((data) => {
-                console.log(data)
+                // console.log(data)
                 setcomment('')
+                setreplyComment([false, {
+                  pid: '',
+                  replyId: '',
+                  name: ''
+                }])
                 mutate(`${server}/getFeed.php?portion=all`)
                 mutate(`${server}/getPost.php?postId=${pid}`)
                 // console.log("Comment added")
