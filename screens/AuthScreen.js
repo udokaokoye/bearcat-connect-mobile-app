@@ -44,7 +44,7 @@ const AuthScreen = () => {
     } else {
         formData.append('user', signinemail)
         formData.append('password', signinpassword)
-        const url = signinemail.includes("@mail.uc.edu") ? `http://${server}/bearcats_connect/login.php` : `http://${server}/bearcats_connect/login.php?withUsername=1`
+        const url = signinemail.includes("@mail.uc.edu") ? `${server}/login.php` : `${server}/login.php?withUsername=1`
 
         fetch(url, {
           method: "POST",

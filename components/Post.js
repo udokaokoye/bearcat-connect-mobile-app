@@ -24,7 +24,7 @@ import { useNavigation } from "@react-navigation/native";
 import reactStringReplace from 'react-string-replace';
 import { mutate } from "swr";
 import numeral from "numeral";
-const Post = ({ user, post, comments, tags, reactions }) => {
+const Post = ({ user, post, comments, tags, reactions, setmenuActive, menuActive }) => {
   const [caption, setcaption] = useState(post?.caption)
   const [tgcounter, settgcounter] = useState(0)
   const navigation = useNavigation()
@@ -45,10 +45,6 @@ var rtext = post?.caption
 // const reacData = getPost(post.id).post;
 var freshReactions = getPost(post.id).post;
 
-
-// useEffect(() => {
-//   var freshReactions = reacData;
-// }, [reacData])
 
 
 const alreadyLiked = freshReactions?.reactions.data.some(reaction => {
@@ -73,6 +69,8 @@ useEffect(() => {
 }, [])
 
 const postReaction = () => {
+  // console.log(freshReactions.reactions);
+  // return;
 const formData = new FormData();
   // console.log(alreadyLiked)
   // return;
@@ -80,9 +78,9 @@ const formData = new FormData();
 formData.append('userId', user.userId)
 formData.append('postId', post.id)
 
-  fetch(`http://${server}/bearcats_connect/reactions.php${alreadyLiked ? '?unlike=true' : ''}`, {method: "POST", body: formData}).then((res) => res.json()).then((data) => {
+  fetch(`${server}/reactions.php${alreadyLiked ? '?unlike=true' : ''}`, {method: "POST", body: formData}).then((res) => res.json()).then((data) => {
     // console.log(data)
-    mutate(`http://${server}/bearcats_connect/getPost.php?postId=${post.id}`)
+    mutate(`${server}/getPost.php?postId=${post.id}`)
   })
 }
 
@@ -118,7 +116,7 @@ formData.append('postId', post.id)
               <Text className=" text-xs">@{post.username}</Text>
               {/* <Text>{tags.length}</Text> */}
             </Text>
-            <Text className="">...</Text>
+            <Pressable className='p-2' onPress={() => setmenuActive([true, post.user_id, post.id])}><Text className="">...</Text></Pressable> 
           </View>
         </View>
 
@@ -157,7 +155,7 @@ formData.append('postId', post.id)
         )}
         <View className='flex-row items-center justify-between mt-5'>
           <TouchableOpacity>
-            <Text>{numeral(reactions.count).format('0a')} likes</Text>
+            <Text>{numeral(freshReactions?.reactions.count).format('0a')} likes</Text>
           </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate('commentview', {
             user: user,

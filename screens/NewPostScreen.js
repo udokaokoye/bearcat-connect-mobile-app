@@ -59,7 +59,7 @@ const NewPostScreen = ({ route }) => {
   const [searchResult, setsearchResult] = useState([])
   useEffect(() => {
     // console.log(searchPhrase)
-    fetch(`http://${server}/bearcats_connect/tagSearch.php?phrase=${searchPhrase}`).then((res) => res.json()).then((data) => {
+    fetch(`${server}/tagSearch.php?phrase=${searchPhrase}`).then((res) => res.json()).then((data) => {
     setsearchResult(data)
     // console.log(data)
     })
@@ -92,7 +92,7 @@ const NewPostScreen = ({ route }) => {
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       //   allowsEditing: true,
       aspect: [4, 3],
-      quality: 0.7,
+      quality: 0.2,
       allowsMultipleSelection: true,
     });
 
@@ -155,7 +155,7 @@ const NewPostScreen = ({ route }) => {
     formData.append("files[]", { uri: images[i], name: filename, type });
   }
 
-  fetch(`http://${server}/bearcats_connect/posts.php`, {
+  fetch(`${server}/posts.php`, {
       method: "POST",
       body: formData,
       headers: {
@@ -163,7 +163,7 @@ const NewPostScreen = ({ route }) => {
      },
   }).then((res) => res.json()).then((data) => {
       setcaption('')
-      mutate(`http://${server}/bearcats_connect/getFeed.php?portion=all`)
+      mutate(`${server}/getFeed.php?portion=all`)
       console.log(data)
       navigation.navigate('home')
   })
@@ -174,7 +174,7 @@ const renderSuggestions = ({keyword, onSuggestionPress}) => {
   if (keyword == null) {
     return null;
   }
-  fetch(`http://${server}/bearcats_connect/tagSearch.php?phrase=${keyword}`).then((res) => res.json()).then((data) => {
+  fetch(`${server}/tagSearch.php?phrase=${keyword}`).then((res) => res.json()).then((data) => {
     setsuggestions(data)
     // console.log(data)
     })
@@ -219,7 +219,7 @@ const renderHashTags = ({keyword, onSuggestionPress}) => {
   if (keyword == null) {
     return null;
   }
-  fetch(`http://${server}/bearcats_connect/hashTagSearch.php?phrase=${keyword}`).then((res) => res.json()).then((data) => {
+  fetch(`${server}/hashTagSearch.php?phrase=${keyword}`).then((res) => res.json()).then((data) => {
     sethashtagsSuggestions(data)
     // console.log(data)
     })
@@ -354,7 +354,7 @@ const renderHashTags = ({keyword, onSuggestionPress}) => {
               backgroundColor: "transparent"
             },
             draggableIcon: {
-              backgroundColor: "red"
+              backgroundColor: "#aab8b9"
             },
           }}
         >
