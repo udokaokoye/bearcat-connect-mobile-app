@@ -60,16 +60,16 @@ setTimeout(() => {
 const deletePost = async (pid) => {
   // alert(pid);
   // return
-  fetch(`http://${server}/bearcats_connect/deletePost.php?pid=${pid}`, {headers: {
+  fetch(`${server}/deletePost.php?pid=${pid}`, {headers: {
     'Authorization': `Bearer ${await AsyncStorage.getItem('user-token')}`
  }})
-  mutate(`http://${server}/bearcats_connect/getFeed.php?portion=all`)
+  mutate(`${server}/getFeed.php?portion=all`)
   refRBSheet.current.close()
   setmenuActive([false, '', ''])
 }
   const refreshData = async () => {
     setrefreshing(true)
-    await mutate(`http://${server}/bearcats_connect/getFeed.php?portion=all`)
+    await mutate(`${server}/getFeed.php?portion=all`)
     setrefreshing(false)
   }
   return (

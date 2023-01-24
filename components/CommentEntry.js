@@ -2,7 +2,7 @@
 import { View, Text, Image, TextInput } from 'react-native'
 import React, {useContext, useState, useEffect, useRef} from 'react'
 import { mutate } from 'swr'
-import { CommentReply } from '../lib/swr-hooks'
+import { CommentReply, server } from '../lib/swr-hooks'
 
 const CommentEntry = ({user, pid, replyId=null}) => {
   const { replyComment, setreplyComment } = useContext(CommentReply);
@@ -28,14 +28,14 @@ const CommentEntry = ({user, pid, replyId=null}) => {
         formData.append('reply_id', replyId)
 
         if (comment !== '' || comment !== null || comment !== ' ') {
-            fetch('http://192.168.1.51/bearcats_connect/comment.php', {
+            fetch(`${server}/comment.php`, {
                 method: "POST",
                 body: formData
             }).then((res) => res.json()).then((data) => {
                 console.log(data)
                 setcomment('')
-                mutate('http://192.168.1.51/bearcats_connect/getFeed.php?portion=all')
-                mutate(`http://192.168.1.51/bearcats_connect/getPost.php?postId=${pid}`)
+                mutate(`${server}/getFeed.php?portion=all`)
+                mutate(`${server}/getPost.php?postId=${pid}`)
                 // console.log("Comment added")
 
             })

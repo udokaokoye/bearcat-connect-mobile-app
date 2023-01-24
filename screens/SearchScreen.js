@@ -18,7 +18,7 @@ const SearchScreen = ({route}) => {
   }, [isValidating])
 
   useEffect(() => {
-    fetch(`http://${server}/bearcats_connect/tagSearch.php?phrase=${searchPhrase}`).then((res) => res.json()).then((data) => {
+    fetch(`${server}/tagSearch.php?phrase=${searchPhrase}`).then((res) => res.json()).then((data) => {
     setsearchResult(data)
     // console.log(data)
     })

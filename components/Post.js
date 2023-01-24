@@ -78,9 +78,9 @@ const formData = new FormData();
 formData.append('userId', user.userId)
 formData.append('postId', post.id)
 
-  fetch(`http://${server}/bearcats_connect/reactions.php${alreadyLiked ? '?unlike=true' : ''}`, {method: "POST", body: formData}).then((res) => res.json()).then((data) => {
+  fetch(`${server}/reactions.php${alreadyLiked ? '?unlike=true' : ''}`, {method: "POST", body: formData}).then((res) => res.json()).then((data) => {
     // console.log(data)
-    mutate(`http://${server}/bearcats_connect/getPost.php?postId=${post.id}`)
+    mutate(`${server}/getPost.php?postId=${post.id}`)
   })
 }
 
