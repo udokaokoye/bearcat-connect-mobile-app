@@ -20,23 +20,6 @@ const AuthScreen = () => {
   const {setsignedinUser} = useContext(AuthContext)
 
   const handelSignIn = async () => {
-    // await SecureStore.deleteItemAsync('user-token')
-    // setsignedinUser('true')
-    // navigation.navigate('home')
-    // const token =  AsynStorage.getItem('user-token').then((tk) => {
-    //   // console.log(tk)
-    //   return tk
-    // })
-    // console.log( await token)
-    // console.log(await SecureStore.getItemAsync('user-token'));
-    // SecureStore.setItemAsync('user-token', '1111')
-    // AsynStorage.removeItem("user-token");
-    // console.log(AsynStorage.getItem('hello').then((token) => {
-    //   return token
-    // }))
-    // AsynStorage.getItem('user-token').then((token) => {
-    //   console.log(token)
-    // })
     // return;
     const formData = new FormData()
     if (signinemail == '' || signinpassword == "") {
