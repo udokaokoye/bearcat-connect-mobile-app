@@ -50,8 +50,8 @@ const AuthScreen = () => {
           method: "POST",
           body: formData
         }).then((res) => res.json()).then(async (data) => {
-          console.log(data);
-          return;
+          // console.log(data);
+          // return;
           if (data[0] == "SUCCESS") {
             AsyncStorage.setItem('user-token', data[2]).then((tk) => {
               alert("SUCCESS")

@@ -28,7 +28,7 @@ import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import PostMedia from "../components/PostMedia";
 import RBSheet from "react-native-raw-bottom-sheet";
-import { GetUser, server } from "../lib/swr-hooks";
+import { GetUser, locationList, server } from "../lib/swr-hooks";
 import ProfileCard from "../components/ProfileCard";
 import { MentionInput, replaceMentionValues } from 'react-native-controlled-mentions'
 import { setStatusBarBackgroundColor } from "expo-status-bar";
@@ -49,7 +49,7 @@ const NewPostScreen = ({ route }) => {
   const headerHeight = useHeaderHeight();
   const { user } = route.params;
 
-  const [openTagUserTab, setopenTagUserTab] = useState(false)
+  const [openLocationsTab, setopenLocationsTab] = useState(false)
 
   const refRBSheet = useRef();
   const captionRef = useRef();
@@ -57,6 +57,7 @@ const NewPostScreen = ({ route }) => {
 
   const [searchPhrase, setsearchPhrase] = useState('')
   const [searchResult, setsearchResult] = useState([])
+  const [location, setlocation] = useState('')
   useEffect(() => {
     // console.log(searchPhrase)
     fetch(`${server}/tagSearch.php?phrase=${searchPhrase}`).then((res) => res.json()).then((data) => {
@@ -80,7 +81,6 @@ const NewPostScreen = ({ route }) => {
 
   const tagUserListen = (e) => {
     if (e.nativeEvent.key === '@') {
-      setopenTagUserTab(true)
       // console.log("@ pressed")
       refRBSheet.current.open()
     }
@@ -138,7 +138,7 @@ const NewPostScreen = ({ route }) => {
       // return;
   formData.append("userId", user.userId)
   formData.append("caption", replaceMentionValues(caption, ({id}) => `@${id}`))
-  formData.append("location", '')
+  formData.append("location", locations)
   formData.append("orientation", orientation)
   formData.append("taggedUsers", taggedUsers)
   // console.log(images.length)
@@ -269,9 +269,15 @@ const renderHashTags = ({keyword, onSuggestionPress}) => {
               source={{ uri: user.img }}
               style={{ width: 40, height: 40 }}
             />
+            <View>
             <Text className="ml-2 text-lg">
               {user.fName + " " + user.lName}
             </Text>
+            {location !== '' ? (<View style={{}} className='flex-row items-center'>
+              <MapPinIcon />
+              <Text>{location}</Text>
+              </View>) : ''}
+            </View>
           </View>
 
           <MentionInput
@@ -333,10 +339,13 @@ const renderHashTags = ({keyword, onSuggestionPress}) => {
                 <TouchableOpacity onPress={() => pickImage()}>
                   <PhotoIcon color={"green"} />
                 </TouchableOpacity>
-                <TouchableOpacity style={{borderBottomWidth: openTagUserTab ? 1 : 0, paddingBottom: 5}}>
+                <TouchableOpacity>
                   <UserPlusIcon color={"blue"} />
                 </TouchableOpacity>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => {
+                  refRBSheet.current.open()
+                  setopenLocationsTab(true)
+                }}>
                   <MapPinIcon color={"red"} />
                 </TouchableOpacity>
               </View>
@@ -362,33 +371,34 @@ const renderHashTags = ({keyword, onSuggestionPress}) => {
             <TouchableOpacity onPress={() => pickImage()}>
               <PhotoIcon color={"green"} />
             </TouchableOpacity>
-            <TouchableOpacity style={{borderBottomWidth: openTagUserTab ? 1 : 0, paddingBottom: 5}}>
+            <TouchableOpacity >
               <UserPlusIcon color={"blue"} />
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => alert("Hello")}>
               <MapPinIcon color={"red"} />
             </TouchableOpacity>
           </View>
 
-          { openTagUserTab ? (
+          { openLocationsTab ? (
           <View className='mt-10 p-5'>
-            <Text className='text-xl'>Mention Person</Text>
+            <Text className='text-xl'>Search Location</Text>
 
             <TextInput onChangeText={(txt) => setsearchPhrase(txt)} className='mt-3 rounded-md p-2 mb-5' placeholder="start searching..." style={{width: '100%', borderWidth: 1, borderColor: 'silver'}} />
-            {searchPhrase == '' ? 
-            userData?.following?.following.length > 0 ? userData?.following?.following.slice(0, 15).map((followingUser, index) => (
-              <TouchableNativeFeedback onPress={() => tagSelected(followingUser)}>
-                <View><ProfileCard key={index} user={followingUser}/></View>
-              </TouchableNativeFeedback>
-          )) : ""
-            : searchResult.map((res) => (
-              <TouchableNativeFeedback onPress={() => tagSelected(res)}>
-                <View><ProfileCard user={res} /></View>
-              </TouchableNativeFeedback>
+            
+            {locationList.map((lc) => (
+              <TouchableHighlight underlayColor={'#e1e2e2'} key={lc.id} className='h-14 flex-row p-2 rounded-xl ' onPress={() => {
+                setlocation(lc.id)
+                refRBSheet.current.close()
+              }}>
+                <View className='flex-row'>
+                <MapPinIcon color={'red'} />
+                  <View className='ml-2'>
+                  <Text>{lc.name}</Text>
+                  <Text>{lc.campus}</Text>
+                  </View>
+                </View>
+                </TouchableHighlight>
             ))}
-            {/* {userData?.following?.following.length > 0 ? userData?.following?.following.slice(0, 15).map((followingUser, index) => (
-                <ProfileCard key={index} user={followingUser}/>
-            )) : "" } */}
           </View>
           ) : ''}
         </RBSheet>
