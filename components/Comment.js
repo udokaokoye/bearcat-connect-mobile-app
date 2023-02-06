@@ -12,18 +12,18 @@ const Comment = ({ comment, reply, user, postAuthorId }) => {
   const { replyComment, setreplyComment } = useContext(CommentReply);
   const headerHeight = useHeaderHeight()
   const invisibleInputRef = useRef()
-  useEffect(() => {
-    if (replyComment[1] !== undefined) {
-      if (replyComment[1].replyId == comment.id) {
-        console.log("hello")
-        invisibleInputRef.current.focus()
-      } else {
-        invisibleInputRef.current.blur()
-      }
-    }
-  }, [replyComment])
+  // useEffect(() => {
+  //   if (replyComment[1] !== undefined) {
+  //     if (replyComment[1].replyId == comment.id) {
+  //       console.log("id matched")
+  //       invisibleInputRef.current.focus()
+  //     } else {
+  //       invisibleInputRef.current.blur()
+  //     }
+  //   }
+  // }, [replyComment])
   return (
-    <View className="flex-row mb-3">
+    <View className="flex-row mb-0">
       {/* <Text>COmment</Text> */}
       <Image
         className="rounded-full"
@@ -46,18 +46,19 @@ const Comment = ({ comment, reply, user, postAuthorId }) => {
         <View className='flex-row space-x-5 mt-2 mb-2'>
             <Text>{moment(comment?.date).fromNow()}</Text>
             <Text>Like</Text>
-            <Pressable onPress={() => setreplyComment([true, {
-              pid: comment?.post_id,
-              replyId: comment?.id,
-              name: comment?.firstName
-            }])}><Text>Reply</Text></Pressable>
+            <Pressable onPress={async () => {
+            await invisibleInputRef.current.focus()
+
+              setreplyComment([true, {
+                pid: comment?.post_id,
+                replyId: comment?.id,
+                name: comment?.firstName
+              }])
+            }}><Text>Reply</Text></Pressable>
         </View>
         <Pressable onPress={() => setviewReply(!viewReply)}><Text className='text-red-400 font-bold mb-2'>{reply?.length <=0 || reply == undefined? "" : viewReply ? "Hide Reply" : "View Reply"}</Text></Pressable>
 
-        <TextInput ref={invisibleInputRef} style={{opacity: 0, height: 1}} />
-        {/* {showCommentInput ? (
-          <CommentEntry user={user} pid={comment?.post_id} replyId={comment?.id} />
-        ) : ("")} */}
+        <TextInput ref={invisibleInputRef} style={{opacity: 1, height: 1}} />
 
         {reply?.length <=0 || !viewReply ? ("") : (
           <View>

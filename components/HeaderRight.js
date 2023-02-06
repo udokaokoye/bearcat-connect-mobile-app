@@ -1,7 +1,7 @@
 import { View, Text, Image, TouchableNativeFeedback, Pressable } from 'react-native'
 import React, { useContext } from 'react'
 import { AuthContext, logUserOut } from '../lib/swr-hooks'
-import {MagnifyingGlassIcon} from 'react-native-heroicons/solid'
+import {MagnifyingGlassIcon, ChatBubbleBottomCenterIcon} from 'react-native-heroicons/solid'
 import { useNavigation } from '@react-navigation/native'
 
 const HeaderRight = () => {
@@ -9,13 +9,16 @@ const HeaderRight = () => {
     const navigation = useNavigation();
   return (
     <View className='flex-row items-center'>
+      <Pressable onPress={() => navigation.navigate('chatlist')} style={{width: 30, height: 30}} className='bg-gray-200 rounded-full items-center justify-center mr-3'>
+        <ChatBubbleBottomCenterIcon />
+      </Pressable>
       <Pressable onPress={() => navigation.navigate('search', {
         user: signedinUser
       })} style={{width: 30, height: 30}} className='bg-gray-200 rounded-full items-center justify-center mr-3'>
         <MagnifyingGlassIcon color={'#000'} size={15} />
       </Pressable>
         <TouchableNativeFeedback onPress={() => {
-          logUserOut(navigation)
+          logUserOut(signedinUser.userId)
           setsignedinUser(null)
         }}>
         <View style={{position: 'relative', width: 30, height: 30}}>

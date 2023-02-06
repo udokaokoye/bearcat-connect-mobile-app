@@ -8,16 +8,28 @@ const CommentEntry = ({user, pid, replyId=null}) => {
   const { replyComment, setreplyComment } = useContext(CommentReply);
   const [comment, setcomment] = useState("")
   const refInput = useRef();
+  useEffect(() => {
+    setcomment('')
+
+  }, [])
+  
 
   useEffect(() => {
-    setTimeout(() => {
-      if (replyComment[0] == true) {
-        setcomment(`@${replyComment[1].name} `)
-        refInput.current.focus()
-      } else {
-        setreplyComment("")
-      }
-    }, 500);
+
+      setTimeout(() => {
+        if (replyComment && replyComment !== null && replyComment != undefined) {
+          if (replyComment[0] == true && replyComment[1].pid == pid) {
+            // console.log(replyComment)
+            setcomment(`@${replyComment[1].name} `)
+            // console.log('hey i ran again ' + pid)
+          refInput.current.focus()
+          }
+        } else {
+          
+        }
+      }, 600);
+    
+
   }, [replyComment])
 
   const handleSubmmitComment = (e) => {
@@ -39,10 +51,12 @@ const CommentEntry = ({user, pid, replyId=null}) => {
                   replyId: '',
                   name: ''
                 }])
+                setTimeout(() => {
+                  // console.log(replyComment)
+                }, 1000);
                 mutate(`${server}/getFeed.php?portion=all`)
                 mutate(`${server}/getPost.php?postId=${pid}`)
-                // console.log("Comment added")
-
+                
             })
         } else {
             console.log("NO COMMENT")

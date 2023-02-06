@@ -13,7 +13,7 @@ const CommentsViewScreen = ({route}) => {
   const navigation = useNavigation()
   const { pid, user, authorsFirstName } = route.params;
   const { post, postValidating } = getPost(pid);
-  const { replyComment, setreplyComment } = useContext(CommentReply);
+  const { replyComment } = useContext(CommentReply);
 
     const postData = post?.post;
     const headerHeight = useHeaderHeight()
@@ -128,7 +128,7 @@ const CommentsViewScreen = ({route}) => {
 </ScrollView>
 
 <View className='h-20 bg-white pt-5 px-3'>
-    <CommentEntry user={user} pid={pid} replying={replyComment[0]} replydeets={replyComment} />
+    <CommentEntry user={user} pid={pid} replying={replyComment !== null ? replyComment[0] : false} replydeets={replyComment} />
 </View>
 
 </KeyboardAvoidingView>

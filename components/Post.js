@@ -6,6 +6,7 @@ import {
   TouchableWithoutFeedback,
   TouchableNativeFeedback,
   Pressable,
+  Platform,
 } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 // import { AuthContext } from '../lib/swr-hooks'
@@ -30,12 +31,12 @@ const Post = ({ user, post, comments, tags, reactions, setmenuActive, menuActive
   const navigation = useNavigation()
   let postLocation = {
     name:
-    post.location !== ""
-    ? locationList.filter((e) => e.id == post.location)[0].name
+    post?.location !== ""
+    ? locationList?.filter((e) => e.id == post?.location)[0].name
     : "",
     campus:
-    post.location !== ""
-    ? locationList.filter((e) => e.id == post.location)[0].campus
+    post?.location !== ""
+    ? locationList?.filter((e) => e.id == post?.location)[0].campus
     : "",
   };
   // setcaption(post.caption)
@@ -47,7 +48,7 @@ var freshReactions = getPost(post.id).post;
 
 
 
-const alreadyLiked = freshReactions?.reactions.data.some(reaction => {
+var alreadyLiked = freshReactions?.reactions.data.some(reaction => {
   return reaction.userId == user.userId
 });
 useEffect(() => {
@@ -69,14 +70,13 @@ useEffect(() => {
 }, [])
 
 const postReaction = () => {
-  // console.log(freshReactions.reactions);
-  // return;
 const formData = new FormData();
   // console.log(alreadyLiked)
   // return;
 
 formData.append('userId', user.userId)
 formData.append('postId', post.id)
+// alreadyLiked = !alreadyLiked
 
   fetch(`${server}/reactions.php${alreadyLiked ? '?unlike=true' : ''}`, {method: "POST", body: formData}).then((res) => res.json()).then((data) => {
     // console.log(data)
@@ -111,7 +111,7 @@ formData.append('postId', post.id)
           </Pressable>
 
           <View className="flex-row items-center justify-between flex-1 ml-3">
-            <Text className="text-lg flex-1">
+            <Text className={`${Platform.OS == 'ios' ? 'text-md' : 'text-md'} flex-1`}>
               {post?.fName + " " + post?.lName}{" "}
               <Text className=" text-xs">@{post.username}</Text>
               {/* <Text>{tags.length}</Text> */}
@@ -120,7 +120,7 @@ formData.append('postId', post.id)
           </View>
         </View>
 
-        {post.location !== '' ? (
+        {post?.location !== '' ? (
           <View className='flex-row items-center ml-9 mb-1'>
           <MapPinIcon size={20} color={'red'} />
           <Text className="text-xs text-gray-500 ml-1">
@@ -136,23 +136,27 @@ formData.append('postId', post.id)
           {replacedtext}
         </Text>
 
-        {post.images.length > 0 ? (
-          <TouchableWithoutFeedback onPress={() => navigation.navigate('postdetails', {
-            pid: post.id,
-            user: user,
-            authorsFirstName: post.fName
-          })}>
+        {post?.type !== null ? (
+          <TouchableWithoutFeedback onPress={() => {
+            post?.type == 'image' && navigation.navigate('postdetails', {
+              pid: post.id,
+              user: user,
+              authorsFirstName: post.fName
+            })
+          }}>
             <View>
           <PostMedia
             files={post.images}
             orientation={post?.orientation.toString().split(',')}
-            fileType={"images"}
+            fileType={post?.type}
+            pid={post?.id}
           />
           </View>
           </TouchableWithoutFeedback>
         ) : (
           ""
         )}
+       {/* <Text>{post?.type}</Text> */}
         <View className='flex-row items-center justify-between mt-5'>
           <TouchableOpacity>
             <Text>{numeral(freshReactions?.reactions.count).format('0a')} likes</Text>

@@ -9,35 +9,35 @@ import {
   Platform,
   Button,
   Dimensions,
-  Animated,
   TouchableHighlight,
   Pressable,
-  TouchableNativeFeedback,
+  Keyboard
 } from "react-native";
 import React, { useLayoutEffect, useState, useEffect, useRef } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { useHeaderHeight } from "@react-navigation/elements";
 
 import {
-  MapIcon,
   MapPinIcon,
   PhotoIcon,
   UserPlusIcon,
 } from "react-native-heroicons/outline";
 import * as ImagePicker from "expo-image-picker";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import PostMedia from "../components/PostMedia";
 import RBSheet from "react-native-raw-bottom-sheet";
 import { GetUser, locationList, server } from "../lib/swr-hooks";
-import ProfileCard from "../components/ProfileCard";
 import { MentionInput, replaceMentionValues } from 'react-native-controlled-mentions'
-import { setStatusBarBackgroundColor } from "expo-status-bar";
-import {mutate} from 'swr'
 import numeral from "numeral";
+import { Video, AVPlaybackStatus } from 'expo-av';
 const NewPostScreen = ({ route }) => {
-  // var numeral = require('numeral');
 
+  const videoRef = useRef(null);
+  const [videoStatus, setvideoStatus] = useState({})
+
+
+  const [keyboardStatus, setkeyboardStatus] = useState(false)
   const [images, setimages] = useState([]);
+  const [uploadVideo, setuploadVideo] = useState(null)
   const [orientation, setorientation] = useState([])
   const [caption, setcaption] = useState("");
   const [suggestions, setsuggestions] = useState([])
@@ -51,6 +51,8 @@ const NewPostScreen = ({ route }) => {
 
   const [openLocationsTab, setopenLocationsTab] = useState(false)
 
+
+
   const refRBSheet = useRef();
   const captionRef = useRef();
   const {userData, isValidating} = GetUser(user.userId);
@@ -58,6 +60,20 @@ const NewPostScreen = ({ route }) => {
   const [searchPhrase, setsearchPhrase] = useState('')
   const [searchResult, setsearchResult] = useState([])
   const [location, setlocation] = useState('')
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      setkeyboardStatus(true);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setkeyboardStatus(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
   useEffect(() => {
     // console.log(searchPhrase)
     fetch(`${server}/tagSearch.php?phrase=${searchPhrase}`).then((res) => res.json()).then((data) => {
@@ -77,7 +93,7 @@ const NewPostScreen = ({ route }) => {
         }} />
       ),
     });
-  }, [navigation, caption, images, orientation, isValidating]);
+  }, [navigation, caption, images, orientation, isValidating, location]);
 
   const tagUserListen = (e) => {
     if (e.nativeEvent.key === '@') {
@@ -94,22 +110,43 @@ const NewPostScreen = ({ route }) => {
       aspect: [4, 3],
       quality: 0.2,
       allowsMultipleSelection: true,
+      
     });
 
-    result.assets.forEach((ass) => {
-      // console.log(ass.height + " " + ass.width);
-      setimages(images => [...images, ass.uri]);
+
+    result.assets !== null && result.assets.forEach((ass) => {
+      if (ass.type == 'image') {
+
+        if (uploadVideo == null) {
+          setimages(images => [...images, ass.uri]);
+        } else {
+          alert("you can't add photos and videos in the same post.");
+          result.assets = null;
+          return false;
+        }
+      } else {
+        if (images.length <= 0) {
+          setuploadVideo(ass.uri)
+        } else {
+          result.assets = null;
+          alert("you can't add photos and videos in the same post.");
+          return false;
+        }
+      }
       if (ass.width > ass.height) {
-        console.log("l")
+        // console.log("l")
         setorientation((current) => [...current, 'l'])
     } else if(ass.width < ass.height) {
-        console.log("p")
+        // console.log("p")
         setorientation((current) => [...current, 'p'])
     } else {
         // console.log("l")
         setorientation((current) => [...current, 'l'])
     }
     });
+
+    // console.log(result.assets);
+    // return
   };
 
 
@@ -138,9 +175,10 @@ const NewPostScreen = ({ route }) => {
       // return;
   formData.append("userId", user.userId)
   formData.append("caption", replaceMentionValues(caption, ({id}) => `@${id}`))
-  formData.append("location", locations)
+  formData.append("location", location.id !== undefined ? location.id : '')
   formData.append("orientation", orientation)
   formData.append("taggedUsers", taggedUsers)
+  formData.append('type', uploadVideo == null && images.length <=0 ? null : uploadVideo == null ? 'image' : 'video')
   // console.log(images.length)
 //   return;
 
@@ -155,17 +193,24 @@ const NewPostScreen = ({ route }) => {
     formData.append("files[]", { uri: images[i], name: filename, type });
   }
 
-  fetch(`${server}/posts.php`, {
-      method: "POST",
-      body: formData,
-      headers: {
-        'Authorization': `Bearer ${await AsyncStorage.getItem('user-token')}`
-     },
-  }).then((res) => res.json()).then((data) => {
-      setcaption('')
-      mutate(`${server}/getFeed.php?portion=all`)
-      console.log(data)
-      navigation.navigate('home')
+  if (uploadVideo !== null) {
+    let filename = uploadVideo.split("/").pop();
+
+    // Infer the type of the image
+    let match = /\.(\w+)$/.exec(filename);
+    let type = match ? `image/${match[1]}` : `image`;
+    console.log(type);
+    // return;
+
+    // Assume "photo" is the name of the form field the server expects
+    formData.append("video", { uri: uploadVideo, name: filename, type });
+  }
+// // !BREAKPOINT
+//   return;
+
+  navigation.navigate('home', {
+    uploadPost: true,
+    postDetails: formData
   })
 }
    
@@ -274,8 +319,8 @@ const renderHashTags = ({keyword, onSuggestionPress}) => {
               {user.fName + " " + user.lName}
             </Text>
             {location !== '' ? (<View style={{}} className='flex-row items-center'>
-              <MapPinIcon />
-              <Text>{location}</Text>
+              <MapPinIcon color={'red'} size={18} />
+              <Text className='ml-1'>{location.name}</Text>
               </View>) : ''}
             </View>
           </View>
@@ -303,38 +348,34 @@ const renderHashTags = ({keyword, onSuggestionPress}) => {
           className='mt-5 py-5'
           style={{height: 'auto'}}
           />
-          {/* <TextInput
-            onChangeText={e => setcaption(e)}
-            // value={caption}
-            
-            autoComplete={false}
-            autoCorrect={false}
-            className="mt-5"
-            placeholderTextColor={"gray"}
-            placeholder={`What's happening ${user.fName}?`}
-            style={{ width: "100%" }}
-            onKeyPress={(e) => {
-              tagUserListen(e)
-            }}
-            multiline
-          >
-            
-                <Text>{caption}</Text>
-            </TextInput> */}
 
           {images.length > 0 &&
             <PostMedia fileType={'image'} files={images} orientation={orientation} />
             }
-            {/* <Text>{orientation[4]}</Text> */}
-          {/* <Button title="click me" onPress={() => addPost()} /> */}
+
+
+
+            {uploadVideo !== null && (
+              <Video
+              ref={videoRef}
+              style={{width: '100%', height: 600}}
+              source={{
+                uri: uploadVideo,
+              }}
+              useNativeControls
+              resizeMode="contain"
+              isLooping
+              onPlaybackStatusUpdate={status => setvideoStatus(() => status)}
+            />
+            )}
         </ScrollView>
 
-    <View style={{ width: '100%', height: 120, bottom: 0, shadowColor: '#0000007b',
+    <View style={{ width: '100%', height: 100, bottom: 0, shadowColor: '#0000007b',
       shadowOffset: { width: 0, height: 3 },
       shadowOpacity: 0.6,
       shadowRadius: 20,  
-      elevation: 10, backgroundColor: 'white'}} className='rounded-xl'>
-      <Pressable onPress={() => refRBSheet.current.open()} className="w-12 h-2 bg-gray-200 mt-2 mb-3 rounded-3xl self-center"></Pressable>
+      elevation: 10, backgroundColor: 'white', display: keyboardStatus ? 'none' :'flex'}} className='rounded-xl'>
+      {/* <Pressable onPress={() => refRBSheet.current.open()} className="w-12 h-2 bg-gray-200 mt-2 mb-3 rounded-3xl self-center"></Pressable> */}
     <View  className="flex-row space-x-20 items-center justify-center justify-self-center mt-6 mb-6">
                 <TouchableOpacity onPress={() => pickImage()}>
                   <PhotoIcon color={"green"} />
@@ -352,7 +393,6 @@ const renderHashTags = ({keyword, onSuggestionPress}) => {
     </View>
 
 
-          {/* <View className="w-12 h-2 bg-gray-200 mt-1 mb-3 rounded-xl"></View> */}
           <RBSheet
           ref={refRBSheet}
           closeOnDragDown={true}
@@ -387,7 +427,7 @@ const renderHashTags = ({keyword, onSuggestionPress}) => {
             
             {locationList.map((lc) => (
               <TouchableHighlight underlayColor={'#e1e2e2'} key={lc.id} className='h-14 flex-row p-2 rounded-xl ' onPress={() => {
-                setlocation(lc.id)
+                setlocation(lc)
                 refRBSheet.current.close()
               }}>
                 <View className='flex-row'>
