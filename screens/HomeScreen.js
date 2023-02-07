@@ -45,7 +45,7 @@ import HeaderRight from "../components/HeaderRight";
 import AddPost from "../components/AddPost";
 import Post from "../components/Post";
 import { mutate } from "swr";
-// import Stories from "../components/";
+import Stories from "../components/Stories";
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 const HomeScreen = ({ route }) => {
@@ -279,7 +279,7 @@ const HomeScreen = ({ route }) => {
 
               <View className="mb-10 self-center" style={{ width: "90%" }}>
                 <Text className="pb-2 text-xl">Stories</Text>
-                {/* <Stories /> */}
+                <Stories />
               </View>
 
               <Button onPress={()=> sendPushNotification('ExponentPushToken[6iddUTIscQZRO5B3-hBKYm]')} title="Push" />
