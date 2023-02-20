@@ -35,10 +35,6 @@ const HeaderRight = ({profliePopupRef=null}) => {
             }} />
             </View>
             </TouchableNativeFeedback>
-
-            <View className='w-40 h-60 bg-red-700 absolute top-20  z-10'>
-              <Text>Hello</Text>
-            </View>
   
     </View>
   )

@@ -27,6 +27,7 @@ import {
   AuthContext,
   getFeed,
   getLoggedInUser,
+  logUserOut,
   server,
   ViewableItem,
 } from "../lib/swr-hooks";
@@ -38,6 +39,8 @@ import {
   FlagIcon,
   TrashIcon,
   PencilSquareIcon,
+  ArrowLeftCircleIcon,
+  Cog6ToothIcon
 } from "react-native-heroicons/solid";
 import RBSheet from "react-native-raw-bottom-sheet";
 import HeaderLeft from "../components/HeaderLeft";
@@ -416,7 +419,7 @@ const HomeScreen = ({ route }) => {
         customStyles={{
           container: {
             borderRadius: 20,
-            backgroundColor: "#e7e7e7",
+            backgroundColor: "#EBEEEC",
           },
           draggableIcon: {
             backgroundColor: "#aab8b9",
@@ -424,7 +427,29 @@ const HomeScreen = ({ route }) => {
         }}
       >
 
-        <Text>Next thing to build</Text>
+        <View className='flex-row items-center bg-white p-3 rounded-lg self-center' style={{width: '95%'}}>
+          <Image style={{width: 50, height: 50}} className='rounded-full' source={{uri: signedinUser?.img}} />
+          <View className='ml-3'>
+            <Text className='font-bold text-lg'>{signedinUser.fName + " " + signedinUser.lName}</Text>
+          </View>
+        </View>
+
+        <View>
+          <Pressable onPress={() => {
+            logUserOut(signedinUser.userId)
+            setsignedinUser(null)
+          }} className='flex-row items-center bg-white mt-3 self-center rounded-lg p-3 justify-center' style={{width: '95%'}}>
+            <Text className='mr-2 text-base'>Logout</Text>
+            <ArrowLeftCircleIcon color={'red'} />
+          </Pressable>
+
+          <Pressable onPress={() => {
+            alert('navigate to settings sceen')
+          }} className='flex-row items-center bg-white mt-3 self-center rounded-lg p-3 justify-center' style={{width: '95%'}}>
+            <Text className='mr-2 text-base'>Setings</Text>
+            <Cog6ToothIcon color={'red'} />
+          </Pressable>
+        </View>
 
         </RBSheet>
     </KeyboardAvoidingView>
