@@ -48,6 +48,7 @@ import { mutate } from "swr";
 import Stories from "../components/Stories";
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import sendPushNotification from "../sendPushNotification";
 const HomeScreen = ({ route }) => {
   const { feed, feedValidating } = getFeed("all");
   // const { uploadPost, postDetails } = route.params;
@@ -64,6 +65,7 @@ const HomeScreen = ({ route }) => {
   const notificationListener = useRef();
   const responseListener = useRef();
   const refRBSheet = useRef();
+  const refRBSheet2 = useRef();
 
   
   const updateNotificationTokenInDB = (token) => {
@@ -78,28 +80,6 @@ const HomeScreen = ({ route }) => {
     })
   }
 
-
-  async function sendPushNotification(expoPushToken) {
-    const message = {
-      to: expoPushToken,
-      sound: 'default',
-      title: 'Original Title',
-      body: 'And here is the body!',
-      data: {name: 'hello'},
-    };
-  
-    await fetch('https://exp.host/--/api/v2/push/send', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Accept-encoding': 'gzip, deflate',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(message),
-    }).then((dat) => dat.json()).then((res) => {
-      console.log(res)
-    })
-  }
 
   async function registerForPushNotificationsAsync() {
     let token;
@@ -118,7 +98,7 @@ const HomeScreen = ({ route }) => {
       updateNotificationTokenInDB(token);
 
     } else {
-      alert('Must use physical device for Push Notifications');
+      // alert('Must use physical device for Push Notifications');
     }
   
     if (Platform.OS === 'android') {
@@ -149,7 +129,13 @@ const HomeScreen = ({ route }) => {
     });
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log(response);
+      const data = response.notification.request.content.data
+      if(data.type === 'new_message') {
+        navigation.navigate("chat", {
+          user: data.chatInfo,
+          chatId: data.id,
+        });
+      }
     });
 
     return () => {
@@ -192,7 +178,7 @@ const HomeScreen = ({ route }) => {
       headerTitle: "Feed",
       headerTitleAlign: "center",
       headerLeft: () => <HeaderLeft />,
-      headerRight: () => <HeaderRight />,
+      headerRight: () => <HeaderRight profliePopupRef={refRBSheet2} />,
     });
     setTimeout(() => {
       setlayoutMounted(true);
@@ -281,8 +267,10 @@ const HomeScreen = ({ route }) => {
                 <Text className="pb-2 text-xl">Stories</Text>
                 <Stories />
               </View>
-
-              <Button onPress={()=> sendPushNotification('ExponentPushToken[6iddUTIscQZRO5B3-hBKYm]')} title="Push" />
+{/* 
+              <Button onPress={()=> {
+                sendPushNotification(signedinUser.userId, 'message')
+              }} title="Push" /> */}
 
               {showUploadPostLoader ? (
                 <View>
@@ -417,6 +405,28 @@ const HomeScreen = ({ route }) => {
           )}
         </View>
       </RBSheet>
+
+      <RBSheet
+        ref={refRBSheet2}
+        height={450}
+        closeOnDragDown={true}
+        closeOnPressMask={true}
+        openDuration={250}
+        onClose={() => setmenuActive([false, "000"])}
+        customStyles={{
+          container: {
+            borderRadius: 20,
+            backgroundColor: "#e7e7e7",
+          },
+          draggableIcon: {
+            backgroundColor: "#aab8b9",
+          },
+        }}
+      >
+
+        <Text>Next thing to build</Text>
+
+        </RBSheet>
     </KeyboardAvoidingView>
   );
 };

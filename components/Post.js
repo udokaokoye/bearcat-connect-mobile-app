@@ -25,6 +25,7 @@ import { useNavigation } from "@react-navigation/native";
 import reactStringReplace from 'react-string-replace';
 import { mutate } from "swr";
 import numeral from "numeral";
+import { Share } from "react-native";
 const Post = ({ user, post, comments, tags, reactions, setmenuActive, menuActive }) => {
   const [caption, setcaption] = useState(post?.caption)
   const [tgcounter, settgcounter] = useState(0)
@@ -189,6 +190,11 @@ formData.append('postId', post.id)
           <TouchableOpacity
             className="flex-row items-center justify-center rounded-md bg-gray-300"
             style={{ width: "30%", height: 30 }}
+            onPress={async () => {
+              await Share.share({
+                message: 'Hello World -> this should be a deeplink to the current post'
+              })
+            }}
           >
             <ShareIcon color={"red"} />
             <Text className="ml-1 text-xs">Share</Text>

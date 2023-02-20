@@ -10,8 +10,10 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { ChatBubbleLeftRightIcon } from "react-native-heroicons/outline";
 import Post from "../components/Post";
+import { AcademicCapIcon, BuildingLibraryIcon } from "react-native-heroicons/solid";
 import AppLoading from "../components/AppLoading";
 import NoPostFound from "../components/NoPostFound";
+import { db } from "../firebase";
 const ProfileScreen = ({ route }) => {
   const { uid } = route.params;
   const { posts, isValidating } = getPosts("userId", uid);
@@ -31,6 +33,74 @@ const ProfileScreen = ({ route }) => {
       userProfile?.followers.followers,
       userProfile?.id
     );
+  };
+
+  const createChat = async (user) => {
+    await db
+      .collection("chats")
+      .add({
+        chatMembers: [signedinUser.userId, user.id],
+        chatMemberInfo: [
+          {
+            name: signedinUser.fName + " " + signedinUser.lName,
+            username: signedinUser.username,
+            profile_picture: signedinUser.img,
+            major: signedinUser.major,
+            id: signedinUser.userId,
+          },
+          {
+            name: user.firstName + " " + user.lastName,
+            username: user.username,
+            profile_picture: user.profile_picture,
+            major: user.major,
+            id: user.id,
+          },
+        ],
+        chatName:
+          signedinUser.fName +
+          " " +
+          signedinUser.lName +
+          "->" +
+          user.firstName +
+          " " +
+          user.lastName,
+      })
+      .then((docRef) => {
+        navigation.navigate("chat", {
+          user: {
+            name: user.firstName + " " + user.lastName,
+            id: user.id,
+            major: user.major,
+            profile_picture: user.profile_picture,
+            username: user.username,
+          },
+          chatId: docRef.id,
+        });
+      })
+      .catch((error) => console.log(error));
+  };
+
+  const navigateToChat = async () => {
+    const possibleSituation = [
+      [userProfile.id, signedinUser.userId],
+      [signedinUser.userId, userProfile.id],
+    ];
+    const snapshot = await db
+      .collection("chats")
+      .where("chatMembers", "in", possibleSituation)
+      .get();
+
+    if (snapshot.docs.length > 0) {
+      navigation.navigate("chat", {
+        user: {
+          name: userProfile.firstName + " " + userProfile.lastName,
+          ...userProfile,
+        },
+        chatId: snapshot.docs[0].id,
+      });
+    } else {
+      createChat(userProfile);
+    }
   };
 
   return (
@@ -66,9 +136,14 @@ const ProfileScreen = ({ route }) => {
                 </Text>
                 <Text className="my-2">@{userProfile?.username}</Text>
                 <View className="flex-row">
-                  <Text className="text-sm font-bold">{userProfile?.followers?.count} Follower{userProfile?.followers?.count > 1 ? 's' : ''}</Text>
+                  <Text className="text-sm font-bold">
+                    {userProfile?.followers?.count} Follower
+                    {userProfile?.followers?.count > 1 ? "s" : ""}
+                  </Text>
                   <Text className="mx-2 text-sm font-bold">|</Text>
-                  <Text className="text-sm font-bold">{userProfile?.following?.count} Following</Text>
+                  <Text className="text-sm font-bold">
+                    {userProfile?.following?.count} Following
+                  </Text>
                 </View>
                 {userProfile?.id !== signedinUser?.userId ? (
                   <Pressable
@@ -86,7 +161,7 @@ const ProfileScreen = ({ route }) => {
                   </Pressable>
                 ) : (
                   <Pressable
-                    onPress={() => followUserHandler()}
+                    onPress={() => alert('EDIT PROFILE')}
                     style={{ height: 35, width: 120, marginTop: 10 }}
                     className="bg-red-500 rounded-lg justify-center"
                   >
@@ -98,7 +173,7 @@ const ProfileScreen = ({ route }) => {
               </View>
 
               <Pressable
-                onPress={() => alert("navigate to chat screen")}
+                onPress={() => navigateToChat()}
                 className="bg-red-600 rounded-full justify-center items-center"
                 style={{ width: 50, height: 50, marginTop: 30 }}
               >
@@ -188,24 +263,63 @@ const ProfileScreen = ({ route }) => {
         </View>
       </View>
 
-      <View className=" bg-gray-100 self-center" style={{ width: "95%" }}>
-        {isValidating ? (
-          <Text>Loading</Text>
-        ) : posts?.length > 0 ? (
-          posts?.map((post, index) => (
-            <Post
-              key={post.post.id}
-              user={signedinUser}
-              post={post.post}
-              tags={post.tags}
-              comments={post.comments}
-              reactions={post.reactions}
-            />
-          ))
-        ) : (
-          <Text> No Post Found </Text>
-        )}
-      </View>
+      {optionBarSelector == 1 ? (
+        <View className=" bg-gray-100 self-center" style={{ width: "95%" }}>
+          {isValidating ? (
+            <Text>Loading</Text>
+          ) : posts?.length > 0 ? (
+            posts?.map((post, index) => (
+              <Post
+                key={post.post.id}
+                user={signedinUser}
+                post={post.post}
+                tags={post.tags}
+                comments={post.comments}
+                reactions={post.reactions}
+              />
+            ))
+          ) : (
+            <Text> No Post Found </Text>
+          )}
+        </View>
+      ) : optionBarSelector == 2 ? (
+        <View
+          className=" bg-white self-center p-3 rounded-lg"
+          style={{ width: "95%" }}
+        >
+          <Text
+            className=" font-bold text-2xl"
+            style={{ textTransform: "capitalize" }}
+          >
+            {userProfile.firstName + " " + userProfile.lastName}
+          </Text>
+          <Text className="mt-3 text-xl font-bold">Bio</Text>
+          <Text className="mt-1">{userProfile.bio}</Text>
+          <View className='flex-row items-center mt-3'>
+            <Text className="text-xl font-bold mr-1">Campus</Text>
+            <BuildingLibraryIcon color={'red'} />
+          </View>
+          <Text className='mt-1'>{userProfile?.campus !== '' ? userProfile.campus == 'UCBA' ? 'Blue Ash' : userProfile.campus == 'CLE' ? 'Cleremont' : 'Uptown' : 'NONE'}</Text>
+          <View className='flex-row items-center mt-3'>
+            <Text className="text-xl font-bold mr-1">Major</Text>
+            <AcademicCapIcon color={'red'} />
+          </View>
+          <Text className='mt-1'>{userProfile?.major}</Text>
+
+          <Text className='mt-3 text-xl font-bold'>Contact Info</Text>
+          <Text>{userProfile.email}</Text>
+        </View>
+      ) : optionBarSelector == 3 ? (
+        <View>
+          <Text>PHOTOS</Text>
+        </View>
+      ) : optionBarSelector == 4 ? (
+        <View>
+          <Text>Videos</Text>
+        </View>
+      ) : (
+        ""
+      )}
     </ScrollView>
   );
 };

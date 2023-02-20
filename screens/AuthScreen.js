@@ -64,19 +64,6 @@ const AuthScreen = () => {
     });
   }, []);
 
-  // const handelRegister = () => {
-  //   auth
-  //     .createUserWithEmailAndPassword(signinemail, signinpassword)
-  //     .then((authuser) => {
-  //       authuser.user.update({
-  //         displayname: "Udoka Okoye",
-  //         photoURL:
-  //           "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8cmFuZG9tJTIwcGVvcGxlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
-  //       });
-  //     })
-  //     .catch((error) => console.log(error.message));
-  // };
-
   return (
     // <View >
     <View

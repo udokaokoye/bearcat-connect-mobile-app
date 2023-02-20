@@ -52,7 +52,7 @@ const ChatList = () => {
   useEffect(() => {
     const unsubscribe = db
       .collection("chats")
-      // .orderBy('messages.timestamp', 'desc')
+      .orderBy('timestamp', 'desc')
       .where("chatMembers", "array-contains", signedinUser.userId) 
       .onSnapshot((snapshot) =>
         setchats(
@@ -126,7 +126,7 @@ const ChatList = () => {
           " " +
           user.lastName,
       })
-      .then(() => {
+      .then((docRef) => {
         refRBSheet.current.close();
         setsearchPhrase("");
         navigation.navigate("chat", {
@@ -137,6 +137,7 @@ const ChatList = () => {
             profile_picture: user.profile_picture,
             username: user.username,
           },
+          chatId: docRef.id
         });
       })
       .catch((error) => console.log(error));
@@ -145,7 +146,7 @@ const ChatList = () => {
     <View className="bg-white flex-1">
       <TextInput
         placeholder="search..."
-        className="mt-5 mb-5 self-center bg-gray-100 rounded-lg p-5"
+        className="mt-5 mb-5 self-center bg-gray-100 rounded-lg px-5"
         style={{ width: "90%", height: 50 }}
         onFocus={() => refRBSheet.current.open()}
       />
@@ -164,6 +165,9 @@ const ChatList = () => {
                   ? data?.chatMemberInfo[0]
                   : data?.chatMemberInfo[1],
                   chatId: id,
+                  otherUser: data?.chatMemberInfo[1]?.id == signedinUser.userId
+                  ? data?.chatMemberInfo[1]
+                  : data?.chatMemberInfo[0]
                 });
               }}
               className=" border-gray-300"
@@ -176,6 +180,7 @@ const ChatList = () => {
                     : data?.chatMemberInfo[1]
                 }
                 id={id}
+                signedinuser={signedinUser}
               />
               {/* <Pressable onPress={() => createChat(u)}><Text>New chat</Text></Pressable> */}
             </TouchableHighlight>
@@ -190,15 +195,11 @@ const ChatList = () => {
         </React.Fragment>
       )}
 
-      {/* <Pressable onPress={() => console.log(chats[0].id)}>
-        <Text>Press me</Text>
-      </Pressable> */}
-
       <RBSheet
         ref={refRBSheet}
         closeOnDragDown={true}
         closeOnPressMask={true}
-        height={Dimensions.get("screen").height}
+        height={Dimensions.get("screen").height - 300}
         customStyles={{
           wrapper: {
             backgroundColor: "transparent",

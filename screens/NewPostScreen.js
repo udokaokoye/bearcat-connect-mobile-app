@@ -29,7 +29,9 @@ import { GetUser, locationList, server } from "../lib/swr-hooks";
 import { MentionInput, replaceMentionValues } from 'react-native-controlled-mentions'
 import numeral from "numeral";
 import { Video, AVPlaybackStatus } from 'expo-av';
+import uuid from 'react-uuid';
 const NewPostScreen = ({ route }) => {
+  
 
   const videoRef = useRef(null);
   const [videoStatus, setvideoStatus] = useState({})
@@ -161,10 +163,19 @@ const NewPostScreen = ({ route }) => {
   const addPost = async () => {
     // console.log(replaceMentionValues(caption, ({id}) => `@${id}`));
     // alert('check vs code console')
+    // console.log(replaceMentionValues(caption, ({id, trigger}) => {
+    //   console.log(trigger + " " + id)
+    // }))
+    // return
+    var hashTags = []
+    replaceMentionValues(caption, ({name, trigger}) => {
+      trigger == '#' ? hashTags.push(`${name}`) : ''
+    })
     var taggedUsers = []
     replaceMentionValues(caption, ({id}) => {
       taggedUsers.push(id)
     })
+    // console.log(hashTags)
     // return;
     const formData = new FormData();
     if (caption === '') {
@@ -174,10 +185,11 @@ const NewPostScreen = ({ route }) => {
       // console.log(taggedUsers)
       // return;
   formData.append("userId", user.userId)
-  formData.append("caption", replaceMentionValues(caption, ({id}) => `@${id}`))
+  formData.append("caption", replaceMentionValues(caption, ({id,trigger,name}) => (trigger == '#' ? trigger+name : trigger+id)))
   formData.append("location", location.id !== undefined ? location.id : '')
   formData.append("orientation", orientation)
-  formData.append("taggedUsers", taggedUsers)
+  formData.append("taggedUsers", JSON.stringify(taggedUsers))
+  formData.append("hashTags", JSON.stringify(hashTags))
   formData.append('type', uploadVideo == null && images.length <=0 ? null : uploadVideo == null ? 'image' : 'video')
   // console.log(images.length)
 //   return;
@@ -265,7 +277,10 @@ const renderHashTags = ({keyword, onSuggestionPress}) => {
     return null;
   }
   fetch(`${server}/hashTagSearch.php?phrase=${keyword}`).then((res) => res.json()).then((data) => {
-    sethashtagsSuggestions(data)
+    sethashtagsSuggestions([{
+      id: keyword,
+      tag: keyword
+    }, ...data])
     // console.log(data)
     })
 
@@ -325,6 +340,8 @@ const renderHashTags = ({keyword, onSuggestionPress}) => {
             </View>
           </View>
 
+          {/* <Text>{uuid()}</Text> */}
+
           <MentionInput
           value={caption}
           onChange={(txt) => setcaption(txt)}
@@ -350,7 +367,7 @@ const renderHashTags = ({keyword, onSuggestionPress}) => {
           />
 
           {images.length > 0 &&
-            <PostMedia fileType={'image'} files={images} orientation={orientation} />
+            <PostMedia fileType={'image'} files={images} orientation={orientation} addingPost={true} setImages={setimages} />
             }
 
 
