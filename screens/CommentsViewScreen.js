@@ -71,12 +71,13 @@ const CommentsViewScreen = ({route}) => {
           <PostMedia
             files={postData.images}
             orientation={postData.orientation}
-            fileType={"images"}
+            fileType={postData?.type}
+            fromCommentViewScreen={true}
           />
           </View>
           </TouchableWithoutFeedback>
         ) : (
-          ""
+          <Text>Hello</Text>
         )}
 
 

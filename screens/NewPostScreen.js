@@ -94,6 +94,20 @@ const NewPostScreen = ({ route }) => {
             addPost()
         }} />
       ),
+      headerLeft: () => (
+        <Button title='Cancel' color='red' onPress={() => {
+          navigation.navigate('home')
+        }} />
+      )
+    });
+
+    navigation.getParent()?.setOptions({
+      tabBarStyle: {
+        display: "none"
+      }
+    });
+    return () => navigation.getParent()?.setOptions({
+      tabBarStyle: undefined
     });
   }, [navigation, caption, images, orientation, isValidating, location]);
 

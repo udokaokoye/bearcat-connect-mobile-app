@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  Pressable
+  Pressable,
 } from "react-native";
 import React, { useContext, useLayoutEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
@@ -17,7 +17,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useHeaderHeight } from "@react-navigation/elements";
 import jwtDecode from "jwt-decode";
 import { auth } from "../firebase";
-import {openBrowserAsync} from 'expo-web-browser'
+import { openBrowserAsync } from "expo-web-browser";
 const AuthScreen = () => {
   const [signinemail, setsigninemail] = useState("");
   const [signinpassword, setsigninpassword] = useState("");
@@ -43,13 +43,15 @@ const AuthScreen = () => {
       })
         .then((res) => res.json())
         .then(async (data) => {
-          // console.log(data);
+          // console.log(data[3]);
           // return;
           if (data[0] == "SUCCESS") {
             AsyncStorage.setItem("user-token", data[2]).then((tk) => {
               alert("SUCCESS");
               setsignedinUser(jwtDecode(data[2]).data);
-              navigation.navigate("home");
+              data[3] == "true"
+                ? navigation.navigate("continueSignup")
+                : navigation.navigate("home");
             });
           } else if (data == "wrong") {
             alert("Wrong username or password");
@@ -113,11 +115,9 @@ const AuthScreen = () => {
           </View>
         </TouchableOpacity>
 
-        <View className="flex-row items-center mt-8" style={{width: '70%'}}>
-          <Text className="text-white">
-            Don't have an account
-          </Text>
-          <Pressable onPress={() => openBrowserAsync('http://localhost:3000/')}>
+        <View className="flex-row items-center mt-8" style={{ width: "70%" }}>
+          <Text className="text-white">Don't have an account</Text>
+          <Pressable onPress={() => openBrowserAsync("http://localhost:3001/")}>
             <Text className="text-red-500 font-bold ml-1">Sign Up</Text>
           </Pressable>
         </View>

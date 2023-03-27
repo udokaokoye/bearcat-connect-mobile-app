@@ -152,6 +152,7 @@ const HomeScreen = ({ route }) => {
     menuActive[0] ? refRBSheet.current.open() : "";
   }, [menuActive[0]]);
 
+  // ! DO NOT REMOVE ANY CODE BELOW (THIS CODE IS LIVE)!!!!! ~Snr Dev (Jake)
   useEffect(() => {
     if (route.params !== undefined && route.params?.uploadPost !== false) {
       setshowUploadPostLoader(true);

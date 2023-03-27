@@ -15,6 +15,7 @@ import React, { useRef, useState, useEffect, useContext } from "react";
 import { VideoMuted, ViewableItem } from "../lib/swr-hooks";
 import { XCircleIcon } from "react-native-heroicons/solid";
 import { ScrollView } from "react-native-gesture-handler";
+import { useNavigation } from "@react-navigation/native";
 const PostMedia = ({
   fileType,
   files,
@@ -22,11 +23,13 @@ const PostMedia = ({
   pid,
   addingPost = false,
   setImages,
+  fromCommentViewScreen=false,
 }) => {
   const videoRef = useRef(null);
   const [videoStatus, setvideoStatus] = useState({});
   const { viewableItem } = useContext(ViewableItem);
   const { videosMuted, setvideosMuted } = useContext(VideoMuted);
+  const navigation = useNavigation()
   // const [isMuted, setisMuted] = useState(misc.videosMuted)
   useEffect(() => {
     if (viewableItem?.key == pid && fileType == "video" && videoRef !== null) {
@@ -56,6 +59,34 @@ const PostMedia = ({
     const updatedArr = files.filter((item, ind) => ind !== index)
     setImages(updatedArr)
   }
+
+  useEffect(() => {
+    if (fromCommentViewScreen) {
+      const plyvid = async () => {
+        await videoRef.current.playFromPositionAsync(0);
+        await videoRef.current.playAsync();
+      }
+      plyvid()
+    }
+  }, [])
+
+
+  useEffect(() => {
+    // const unsubscribe = navigation.addListener('blur', () => {
+    //   console.log('Blur');
+    //   //Every time the screen loses focus the Video is paused
+    //   const pauseOnLeaveScreen = async () => {
+    //     await videoRef.current.pauseAsync();
+    //   }
+    //   pauseOnLeaveScreen()
+    // });
+
+    // return unsubscribe;
+
+    // console.log("hello world")
+  }, [navigation])
+  
+  
 
   {
     if (fileType == "video") {
