@@ -238,7 +238,7 @@ const Post = ({
               navigation.navigate("commentview", {
                 user: user,
                 pid: post.id,
-                authorsFirstName: post?.fName,
+                authorsFirstName: post?.fName
               })
             }
             className="text-xs text-gray-400"

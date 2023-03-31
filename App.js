@@ -13,6 +13,7 @@ import {
   LoggedIn,
   VideoMuted,
   ViewableItem,
+  VideoPaused
 } from "./lib/swr-hooks";
 import { AuthContext } from "./lib/swr-hooks";
 import AppLoading from "./components/AppLoading";
@@ -60,6 +61,7 @@ export default function App() {
   const [viewableItem, setviewableItem] = useState([]);
   const [videosMuted, setvideosMuted] = useState(true);
   const [latestChat, setlatestChat] = useState([]);
+  const [videoPaused, setvideoPaused] = useState(false)
 
   useEffect(() => {
     async function setauth() {
@@ -81,6 +83,7 @@ export default function App() {
   return (
     <AuthContext.Provider value={{ signedinUser, setsignedinUser }}>
       <VideoMuted.Provider value={{ videosMuted, setvideosMuted }}>
+      <VideoPaused.Provider value={{ videoPaused, setvideoPaused }}>
         <ViewableItem.Provider value={{ viewableItem, setviewableItem }}>
           <CommentReply.Provider value={{ replyComment, setreplyComment }}>
             <ChatContext.Provider value={{ latestChat, setlatestChat }}>
@@ -178,7 +181,7 @@ export default function App() {
                           component={ProfileStack}
                         />
 
-                      <Tab.Screen name="continueSignup" component={ContinueSignup} options={{tabBarStyle: { display: "none" }}} />
+                      {/* <Tab.Screen name="continueSignup" component={ContinueSignup} options={{tabBarStyle: { display: "none" }}} /> */}
                       </>
                     ) : (
                       <>
@@ -191,6 +194,7 @@ export default function App() {
             </ChatContext.Provider>
           </CommentReply.Provider>
         </ViewableItem.Provider>
+      </VideoPaused.Provider>
       </VideoMuted.Provider>
     </AuthContext.Provider>
   );

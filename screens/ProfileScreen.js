@@ -6,7 +6,9 @@ import {
   ScrollView,
   StatusBar,
   SafeAreaView,
+  Alert
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
 import {
   AuthContext,
@@ -14,6 +16,7 @@ import {
   getPost,
   getPosts,
   GetUser,
+  logUserOut
 } from "../lib/swr-hooks";
 import { useNavigation } from "@react-navigation/native";
 import {
@@ -154,6 +157,31 @@ const ProfileScreen = ({ route }) => {
                 elevation: 5,
   }
 
+  const logOutUser = () => {
+    AsyncStorage.removeItem("user-token").then((e) => {
+      alert("logged Out");
+      setsignedinUser(null);
+      navigation.navigate("auth");
+    });
+  }
+
+  const handleLogout = () => {
+    Alert.alert("Logout", "Do you want to logout?", [
+      {
+        text: "Cancel",
+        onPress: ()=> console.log('cancel'),
+        style: 'cancel'
+      },
+       {
+        text: 'logout',
+        onPress: ()=> {
+          logOutUser()
+        },
+        style: 'destructive'
+       }
+    ])
+  }
+
   return (
     <ScrollView style={{ flex: 1 }}>
       <StatusBar
@@ -167,13 +195,17 @@ const ProfileScreen = ({ route }) => {
         style={{ height: statusBarHeight, backgroundColor: "white" }}
       ></View>
 
-      <Pressable
-        onPress={() => alert("logout popup")}
-        className="bg-white flex-row items-center pl-5 border-gray-400 rounded-xl flex-wrap"
-      >
-        <ArrowLeftOnRectangleIcon color={"black"} />
-        <Text className="ml-2">leviokoye</Text>
-      </Pressable>
+{
+  userProfile?.id == signedinUser?.userId ? (
+    <Pressable
+    onPress={() => handleLogout()}
+    className="bg-white flex-row items-center pl-5 border-gray-400 rounded-xl flex-wrap"
+  >
+    <ArrowLeftOnRectangleIcon color={"black"} />
+    <Text className="ml-2">{userProfile?.username}</Text>
+  </Pressable>
+  ) : ""
+}
       <View className="flex-row pt-10 px-5 bg-white">
         <Image
           source={{ uri: userProfile?.profile_picture }}

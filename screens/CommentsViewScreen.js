@@ -62,11 +62,21 @@ const CommentsViewScreen = ({route}) => {
 
 
       {postData?.images.length > 0 ? (
-          <TouchableWithoutFeedback onPress={() => navigation.navigate('postdetails', {
-            pid: postData.id,
-            user: user,
-            authorsFirstName: postData.fName
-          })}>
+          <TouchableWithoutFeedback onPress={() => {
+            if (postData?.type == 'video') {
+              navigation.navigate('fullVideo', {
+                post: postData,
+                user: user,
+                authorsFirstName: postData.fName
+              })
+            } else {
+              navigation.navigate('postdetails', {
+                pid: postData.id,
+                user: user,
+                authorsFirstName: postData.fName
+              })
+            }
+          }}>
             <View>
           <PostMedia
             files={postData.images}

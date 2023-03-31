@@ -29,6 +29,8 @@ import {
   getLoggedInUser,
   logUserOut,
   server,
+  VideoMuted,
+  VideoPaused,
   ViewableItem,
 } from "../lib/swr-hooks";
 import * as Progress from "react-native-progress";
@@ -70,6 +72,8 @@ const HomeScreen = ({ route }) => {
   const refRBSheet = useRef();
   const refRBSheet2 = useRef();
 
+  const { videosMuted, setvideosMuted } = useContext(VideoMuted);
+  const { videoPaused, setvideoPaused } = useContext(VideoPaused);
   
   const updateNotificationTokenInDB = (token) => {
     // console.log(signedinUser.userId)
@@ -151,6 +155,23 @@ const HomeScreen = ({ route }) => {
   useEffect(() => {
     menuActive[0] ? refRBSheet.current.open() : "";
   }, [menuActive[0]]);
+
+  useEffect(() => {
+   const unsubscribe = navigation.addListener('blur', () => {
+    setvideosMuted(true)
+    setvideoPaused(true)
+   })
+   return unsubscribe
+  }, [navigation])
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+    //  console.log('focus')
+     setvideoPaused(false)
+    })
+    return unsubscribe
+   }, [navigation])
+  
 
   // ! DO NOT REMOVE ANY CODE BELOW (THIS CODE IS LIVE)!!!!! ~Snr Dev (Jake)
   useEffect(() => {
@@ -268,8 +289,8 @@ const HomeScreen = ({ route }) => {
               </View>
 
               <View className="mb-10 self-center" style={{ width: "90%" }}>
-                <Text className="pb-2 text-xl">Stories</Text>
-                <Stories />
+                {/* <Text className="pb-2 text-xl">Stories</Text> */}
+                {/* <Stories /> */}
               </View>
 {/* 
               <Button onPress={()=> {

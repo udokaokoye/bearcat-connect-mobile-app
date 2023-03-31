@@ -71,6 +71,10 @@ const Chat = ({ route }) => {
 
   const sendMessage = () => {
 
+    if (inputMessage == '' || inputMessage == " ") {
+      return false;
+    }
+
     Keyboard.dismiss();
     // console.log(inputMessage)
     const timestamp = firebase.firestore.FieldValue.serverTimestamp();
@@ -152,7 +156,7 @@ const Chat = ({ route }) => {
           <View style={{ height: 80 }}></View>
         </TouchableWithoutFeedback>
         <View
-          style={{ marginTop: "auto", paddingBottom: 40 }}
+          style={{ marginTop: "auto", paddingBottom: 15 }}
           className="flex-row justify-between items-center px-3"
         >
           <TextInput

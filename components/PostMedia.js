@@ -12,7 +12,7 @@ import {
   SpeakerWaveIcon,
 } from "react-native-heroicons/outline";
 import React, { useRef, useState, useEffect, useContext } from "react";
-import { VideoMuted, ViewableItem } from "../lib/swr-hooks";
+import { VideoMuted, VideoPaused, ViewableItem } from "../lib/swr-hooks";
 import { XCircleIcon } from "react-native-heroicons/solid";
 import { ScrollView } from "react-native-gesture-handler";
 import { useNavigation } from "@react-navigation/native";
@@ -29,14 +29,16 @@ const PostMedia = ({
   const [videoStatus, setvideoStatus] = useState({});
   const { viewableItem } = useContext(ViewableItem);
   const { videosMuted, setvideosMuted } = useContext(VideoMuted);
+  const { videoPaused, setvideoPaused } = useContext(VideoPaused);
   const navigation = useNavigation()
   // const [isMuted, setisMuted] = useState(misc.videosMuted)
   useEffect(() => {
     if (viewableItem?.key == pid && fileType == "video" && videoRef !== null) {
       async function stt() {
-        await videoRef.current.playFromPositionAsync(0);
-        await videoRef.current.playAsync();
-        await videoRef.current.setIsMutedAsync(videosMuted);
+        // !making sure videoRef.current is not null before we play video
+        videoRef.current !== null && await videoRef.current.playFromPositionAsync(0);
+        videoRef.current !== null && await videoRef.current.playAsync();
+        videoRef.current !== null && await videoRef.current.setIsMutedAsync(videosMuted);
       }
       stt();
     } else {
@@ -63,28 +65,45 @@ const PostMedia = ({
   useEffect(() => {
     if (fromCommentViewScreen) {
       const plyvid = async () => {
-        await videoRef.current.playFromPositionAsync(0);
-        await videoRef.current.playAsync();
+        // !making sure videoRef.current is not null before we play video
+        videoRef.current !== null && await videoRef.current.playFromPositionAsync(0);
+        videoRef.current !== null && await videoRef.current.playAsync();
       }
       plyvid()
     }
   }, [])
 
-
   useEffect(() => {
-    // const unsubscribe = navigation.addListener('blur', () => {
-    //   console.log('Blur');
-    //   //Every time the screen loses focus the Video is paused
-    //   const pauseOnLeaveScreen = async () => {
-    //     await videoRef.current.pauseAsync();
-    //   }
-    //   pauseOnLeaveScreen()
-    // });
+    // console.log('hello')
+    // console.log(viewableItem?.post)
+    const updatevideopaused = async() => {
+      if (videoPaused == true) {
+        videoRef.current !== null && await videoRef.current.setIsMutedAsync(videosMuted);
+        videoRef.current !== null && await videoRef.current.pauseAsync();
+      } else {
+        videoRef.current !== null && await videoRef.current.setIsMutedAsync(true);
+        videoRef.current !== null && await videoRef.current.playAsync();
+      }
+    }
+    updatevideopaused()
+  }, [videoPaused])
+  
 
-    // return unsubscribe;
 
-    // console.log("hello world")
-  }, [navigation])
+  // useEffect(() => {
+  //   const unsubscribe = navigation.addListener('blur', () => {
+  //     console.log('Blur');
+  //     //Every time the screen loses focus the Video is paused
+  //     // const pauseOnLeaveScreen = async () => {
+  //     //   await videoRef.current.pauseAsync();
+  //     // }
+  //     // pauseOnLeaveScreen()
+  //   });
+
+  //   return unsubscribe;
+
+  //   console.log("hello world")
+  // }, [navigation])
   
   
 
